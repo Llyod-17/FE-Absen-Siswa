@@ -69,6 +69,7 @@ export default function LoginPage() {
     scanError,
     isLoggingIn,
     tokenExpiredError,
+    attendanceStatus,
     loginForm,
     onLoginSubmit,
     onQRSubmit,
@@ -211,9 +212,19 @@ export default function LoginPage() {
                     transition={{ delay: 0.5 }}
                     className="mt-4 flex items-center justify-center"
                   >
-                    <div className="flex items-center gap-2 bg-emerald-950/60 border border-emerald-700/40 rounded-full px-4 py-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs text-emerald-400 font-semibold tracking-widest">HADIR</span>
+                    <div className={`flex items-center gap-2 rounded-full px-4 py-1.5 border ${
+                      attendanceStatus === 'telat'
+                        ? 'bg-amber-950/60 border-amber-700/40'
+                        : 'bg-emerald-950/60 border-emerald-700/40'
+                    }`}>
+                      <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                        attendanceStatus === 'telat' ? 'bg-amber-400' : 'bg-emerald-400'
+                      }`} />
+                      <span className={`text-xs font-semibold tracking-widest ${
+                        attendanceStatus === 'telat' ? 'text-amber-400' : 'text-emerald-400'
+                      }`}>
+                        {attendanceStatus === 'telat' ? 'TELAT' : 'HADIR'}
+                      </span>
                     </div>
                   </motion.div>
                 </motion.div>

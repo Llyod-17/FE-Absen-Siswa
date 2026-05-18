@@ -75,14 +75,13 @@ export const authAPI = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed submit absen");
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || "Failed submit absen");
     }
 
     return response.json();
   },
 
-  // ✅ FULL LOGOUT VERSION
   logout: async (): Promise<void> => {
     try {
       const token = localStorage.getItem("authToken");

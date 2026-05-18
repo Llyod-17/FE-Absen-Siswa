@@ -111,8 +111,8 @@ export function ExportDataForm() {
           <FileSpreadsheet className="h-6 w-6 text-blue-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Export Kehadiran</h1>
-          <p className="text-sm text-slate-500">Filter berdasarkan kelas, jurusan, atau tanggal</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Unduh Laporan Kehadiran</h1>
+          <p className="text-sm text-slate-500">Ekspor data kehadiran siswa ke format Excel</p>
         </div>
       </div>
 
@@ -266,7 +266,7 @@ export function ExportDataForm() {
               <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-400/70 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-500">
-                  Minimal satu filter harus dipilih. Data akan diekspor dalam format <span className="text-slate-400">.xlsx</span>
+                  Minimal satu filter harus dipilih. Data akan diunduh dalam format <span className="text-slate-400">.xlsx</span>
                 </p>
               </div>
             </motion.div>
@@ -291,7 +291,7 @@ export function ExportDataForm() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <Download className="h-4 w-4" />
-                    Export ke Excel
+                    Unduh Laporan (Excel)
                   </div>
                 )}
               </Button>

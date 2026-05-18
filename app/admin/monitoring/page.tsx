@@ -53,7 +53,7 @@ export default function MonitoringPage() {
       {/* Page Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Monitoring Absensi
+          Data Kehadiran Harian
         </h1>
         <p className="text-slate-600">
           Pantau status kehadiran siswa hari ini dan ubah status jika diperlukan.
@@ -65,7 +65,7 @@ export default function MonitoringPage() {
         variants={containerVariants}
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4"
       >
-        <StatsCard icon={Users} label="Total" value={summary?.total || 0} color="blue" index={0} />
+        <StatsCard icon={Users} label="Total Siswa" value={summary?.total || 0} color="blue" index={0} />
         <StatsCard icon={CheckCircle} label="Hadir" value={summary?.hadir || 0} color="green" index={1} />
         <StatsCard icon={Clock} label="Telat" value={summary?.telat || 0} color="orange" index={2} />
         <StatsCard icon={AlertTriangle} label="Alfa" value={summary?.alfa || 0} color="red" index={3} />

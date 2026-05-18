@@ -84,6 +84,7 @@ export function useLoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
   const [isSubmittingToken, setIsSubmittingToken] = useState(false)
+  const [attendanceStatus, setAttendanceStatus] = useState<string>('hadir')
   // Error yang ditampilkan inline di modal QR (untuk expired token dll)
   const [tokenExpiredError, setTokenExpiredError] = useState<string | null>(null)
 
@@ -232,8 +233,9 @@ export function useLoginPage() {
         return
       }
 
-      await submitAbsen(tokenCode)
+      const result = await submitAbsen(tokenCode)
 
+      setAttendanceStatus(result.status || 'hadir')
       setSuccessTime({ date: new Date(), receiptId: generateReceiptId() })
       setShowTokenModal(false)
       setCurrentScreen("success")
@@ -310,6 +312,7 @@ export function useLoginPage() {
     successTime,
     scanError,
     tokenExpiredError,
+    attendanceStatus,
     loginForm,
     onLoginSubmit,
     onQRSubmit,

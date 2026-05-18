@@ -59,10 +59,10 @@ export default function TokenGenerationPage() {
       {/* Page Header */}
       <motion.div variants={itemVariants}>
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Manajemen Token Absensi
+          Manajemen QR Absensi
         </h1>
         <p className="text-slate-600">
-          Buat dan pantau QR Code absen untuk fase Hadir dan Telat
+          Buat dan pantau QR Code absensi untuk fase Hadir dan Telat hari ini.
         </p>
       </motion.div>
 
