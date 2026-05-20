@@ -8,6 +8,7 @@ import {
   ChartDataPoint,
   TokenRequest,
   MonitoringResponse,
+  MonitoringSummary,
 } from './types'
 
 /* =========================================================
@@ -99,6 +100,8 @@ function mapDashboardResponse(data: any): AttendanceStats {
     todayAttendance: data.total_absen_hari_ini,
     activeTokens: data.token_aktif,
     totalAttendance: data.token_hari_ini,
+    totalHadir: data.total_hadir_hari_ini,
+    totalTelat: data.total_telat_hari_ini,
   }
 }
 
@@ -185,8 +188,9 @@ export function usePaginatedTokens() {
       const result = await tokenAPI.getPaginated(page)
 
       if ('data' in result && result.data) {
-        setTokens(result.data.tokens)
-        setTotalPages(result.data.totalPages)
+        const responseData = result.data as any
+        setTokens(responseData.tokens || [])
+        setTotalPages(responseData.totalPages || 1)
       } else {
         setError(result.message || 'Failed to fetch tokens')
       }
@@ -217,14 +221,43 @@ export function usePaginatedTokens() {
 ========================================================= */
 
 export function useAvailableClasses() {
-  const [classes] = useState([
-    { id: 'XI-RPL-1', name: 'XI RPL 1' },
-    { id: 'XI-RPL-2', name: 'XI RPL 2' },
-    { id: 'XI-TKJ-1', name: 'XI TKJ 1' },
-    { id: 'XI-MM-1', name: 'XI MM 1' },
-  ])
+  const [classes, setClasses] = useState<{ id: string; name: string }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  return { classes, loading: false, error: null }
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        setLoading(true)
+        const result = await monitoringAPI.getClasses()
+
+        if ('data' in result && Array.isArray(result.data) && result.data.length > 0) {
+          // Backend mengembalikan array string: ["X-RPL-1", "XI-RPL-1", ...]
+          // Kita konversi menjadi format { id, name } untuk dropdown
+          if (typeof result.data[0] === 'string') {
+            setClasses(
+              (result.data as string[]).map((cls) => ({
+                id: cls,
+                name: cls, // Gunakan value yang sama untuk label dropdown
+              }))
+            )
+          } else {
+            // Jika backend sudah mengembalikan format { id, name }
+            setClasses(result.data as { id: string; name: string }[])
+          }
+        }
+      } catch {
+        // Endpoint gagal → biarkan classes tetap kosong, UI masih bisa dipakai
+        setError(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchClasses()
+  }, [])
+
+  return { classes, loading, error }
 }
 
 export function useAvailableDepartments() {
@@ -318,8 +351,22 @@ export function useMonitoringData(filters: { class_group?: string; status?: stri
       setLoading(true)
       const result = await monitoringAPI.getStudents(filters)
 
-      if ('data' in result) {
-        setData(result.data as MonitoringResponse)
+      if (result && 'data' in result) {
+        const rawResponse = result as any
+        const backendStudents = (rawResponse.data || []) as any[]
+        const mappedStudents = backendStudents.map((s: any) => ({
+          id: s.id,
+          nisn: s.nisn,
+          name: s.full_name || s.name || '',
+          class_group: s.class_group,
+          status: s.status,
+          timestamp: s.clock_in_time && s.clock_in_time !== '-' ? `${rawResponse.date || new Date().toISOString().split('T')[0]}T${s.clock_in_time}` : undefined
+        }))
+
+        setData({
+          summary: rawResponse.summary as MonitoringSummary,
+          data: mappedStudents
+        })
         setError(null)
       } else {
         setError(result.message || 'Failed to fetch monitoring data')

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useMonitoringData } from '@/lib/api-hooks'
+import { useMonitoringData, useAvailableClasses } from '@/lib/api-hooks'
 import { containerVariants, itemVariants } from '@/lib/constants'
 import { MonitoringTable } from '@/components/monitoring-table'
 import { StatsCard } from '@/components/stats-card'
@@ -19,6 +19,9 @@ import { Users, CheckCircle, Clock, AlertTriangle, Activity, XCircle } from 'luc
 export default function MonitoringPage() {
   const [classFilter, setClassFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // Fetch daftar kelas secara dinamis dari API (fallback ke data default jika endpoint belum ada)
+  const { classes } = useAvailableClasses()
 
   const { data, loading, updateStatus } = useMonitoringData({
     class_group: classFilter,
@@ -84,13 +87,10 @@ export default function MonitoringPage() {
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700 text-white">
                 <SelectItem value="all">Semua Kelas</SelectItem>
-                <SelectItem value="X-RPL-1">X-RPL-1</SelectItem>
-                <SelectItem value="X-RPL-2">X-RPL-2</SelectItem>
-                <SelectItem value="XI-RPL-1">XI-RPL-1</SelectItem>
-                <SelectItem value="XI-RPL-2">XI-RPL-2</SelectItem>
-                <SelectItem value="XII-RPL-1">XII-RPL-1</SelectItem>
-                <SelectItem value="XII-RPL-2">XII-RPL-2</SelectItem>
-                {/* Anda dapat menambahkan dropdown dinamis jika endpoint daftar kelas tersedia */}
+                {/* Daftar kelas dinamis dari API */}
+                {classes.map((cls) => (
+                  <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

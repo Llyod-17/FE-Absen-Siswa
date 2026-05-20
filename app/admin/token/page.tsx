@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { TokenGenerationForm } from '@/components/token-generation-form'
 import { TokenHistoryTable } from '@/components/token-history'
@@ -11,8 +10,6 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function TokenGenerationPage() {
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null)
-
   const {
     tokens,
     loading: tokensLoading,
@@ -20,33 +17,26 @@ export default function TokenGenerationPage() {
     setPage,
     totalPages,
     refetch,
-  } = usePaginatedTokens(10)
+  } = usePaginatedTokens()
 
-  const handleTokenGenerated = (token: string) => {
-    setGeneratedToken(token)
-    toast.success('Token generated successfully!')
-    if (refetch) refetch()
+  const handleTokenGenerated = (_token: string) => {
+    toast.success('QR berhasil dibuat!')
+    refetch()
   }
 
   const handleDelete = async (id: string) => {
-    try {
-      toast.promise(
-        new Promise((resolve) => {
-          setTimeout(() => {
-            toast.success('Token deleted successfully!')
-            if (refetch) refetch()
-            resolve(true)
-          }, 500)
-        }),
-        {
-          loading: 'Deleting token...',
-          success: 'Token deleted',
-          error: 'Failed to delete',
-        }
-      )
-    } catch (error) {
-      toast.error('Failed to delete token')
-    }
+    // TODO: connect to a real DELETE /api/v1/token/:id endpoint
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 500)),
+      {
+        loading: 'Menghapus QR...',
+        success: () => {
+          refetch()
+          return 'QR berhasil dihapus'
+        },
+        error: 'Gagal menghapus QR',
+      }
+    )
   }
 
   return (
@@ -71,12 +61,12 @@ export default function TokenGenerationPage() {
         variants={containerVariants}
         className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start"
       >
-        {/* Left Column - Form */}
+        {/* Left Column — Form */}
         <motion.div variants={itemVariants}>
           <TokenGenerationForm onTokenGenerated={handleTokenGenerated} />
         </motion.div>
 
-        {/* Right Column - Active Tokens */}
+        {/* Right Column — History */}
         <motion.div variants={itemVariants} className="space-y-4">
           <TokenHistoryTable
             tokens={tokens}
@@ -106,8 +96,8 @@ export default function TokenGenerationPage() {
                     size="sm"
                     onClick={() => setPage(pageNum)}
                     className={
-                      pageNum === page 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white border-transparent' 
+                      pageNum === page
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white border-transparent'
                         : 'text-slate-600 bg-white hover:bg-slate-50 border-slate-200'
                     }
                   >

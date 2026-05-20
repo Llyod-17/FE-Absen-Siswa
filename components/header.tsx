@@ -33,24 +33,18 @@ export function Header() {
 
       <motion.header
         initial={{ opacity: 0, y: -8 }}
-        animate={{
-          opacity: 1,
-          y: 0,
-          left:
-            typeof window !== 'undefined' && window.innerWidth >= 1024
-              ? collapsed
-                ? 80
-                : 256
-              : 0,
-        }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="
+        className={`
           fixed top-0 right-0 h-16 z-30
           bg-slate-900/80 backdrop-blur-xl
           border-b border-slate-700/50
           px-4 lg:px-6
           flex items-center justify-between
-        "
+          transition-[left] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+          left-0
+          ${collapsed ? 'lg:left-20' : 'lg:left-64'}
+        `}
       >
         {/* Left */}
         <div className="flex items-center gap-3">

@@ -1,23 +1,19 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 import { useSidebar } from '@/context/sidebar-context'
 
 export function MainContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
 
   return (
-    <motion.main
-      animate={{
-        // Mobile: no left margin. Desktop: 80px (collapsed) or 256px (expanded)
-        marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024
-          ? collapsed ? 80 : 256
-          : 0,
-      }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="pt-24 px-4 pb-8 lg:px-8 lg:pb-10 min-h-screen"
+    <main
+      className={cn(
+        "pt-24 px-4 pb-8 lg:px-8 lg:pb-10 min-h-screen transition-[margin-left] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        collapsed ? "lg:ml-20" : "lg:ml-64"
+      )}
     >
       {children}
-    </motion.main>
+    </main>
   )
 }

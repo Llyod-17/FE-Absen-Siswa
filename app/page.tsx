@@ -123,9 +123,16 @@ export default function LoginPage() {
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1, duration: 0.4, ease: "backOut" }}
-                    className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-4"
+                    className="w-20 h-20 rounded-2xl bg-slate-800/50 border border-slate-700/50 shadow-xl shadow-black/20 flex items-center justify-center mx-auto mb-4 relative overflow-hidden backdrop-blur-sm"
                   >
-                    <Fingerprint className="h-7 w-7 text-blue-400" />
+                    {/* Efek kilau cahaya lembut di dalam bingkai */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 to-indigo-500/5 pointer-events-none" />
+                    
+                    <img
+                      src="/logo-sekolah.png"
+                      alt="Logo SMK PLUS PNB"
+                      className="h-20 w-20 object-contain relative z-10"
+                    />
                   </motion.div>
                   <motion.h1
                     initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -139,7 +146,7 @@ export default function LoginPage() {
                     transition={{ delay: 0.2 }}
                     className="text-sm text-slate-500 mt-1"
                   >
-                    Masuk untuk melanjutkan
+                    Masuk untuk mmelanjutkan
                   </motion.p>
                 </div>
 
@@ -328,12 +335,19 @@ export default function LoginPage() {
           </AnimatePresence>
 
           {/* Bottom note */}
-          <motion.p
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-            className="text-center text-xs text-slate-600 mt-5"
+            className="text-center mt-6 space-y-1.5"
           >
-            &copy; {new Date().getFullYear()} Sistem Absensi · Dilindungi keamanan end-to-end
-          </motion.p>
+            <p className="text-xs font-semibold text-slate-400 tracking-wide">
+              Absensi Siswa SMK PLUS PNB
+            </p>
+            <div className="flex items-center justify-center gap-1.5 text-[9px] font-medium tracking-widest uppercase text-slate-600">
+              <span>Powered by</span>
+              <span className="h-1 w-1 rounded-full bg-slate-700" />
+              <span className="text-blue-500/80 font-bold tracking-wide">DEVACTO IT RPL</span>
+            </div>
+          </motion.div>
         </div>
       </div>
 

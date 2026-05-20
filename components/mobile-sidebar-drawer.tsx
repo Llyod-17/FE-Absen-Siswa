@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -12,12 +12,15 @@ import {
   Download,
   ShieldCheck,
   X,
+  Activity,
 } from 'lucide-react'
+import { authAPI } from '@/api/auth'
 
 const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Token Generation', href: '/admin/token', icon: Key },
-  { label: 'Export Data', href: '/admin/export', icon: Download },
+  { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
+  { label: 'Data Kehadiran', href: '/admin/monitoring', icon: Activity },
+  { label: 'QR Absensi', href: '/admin/token', icon: Key },
+  { label: 'Unduh Laporan', href: '/admin/export', icon: Download },
 ]
 
 interface MobileSidebarDrawerProps {
@@ -27,6 +30,13 @@ interface MobileSidebarDrawerProps {
 
 export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await authAPI.logout()
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <AnimatePresence>
@@ -115,7 +125,10 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
 
             {/* Footer */}
             <div className="p-3 border-t border-slate-700/50">
-              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-950/40 transition-all duration-200 cursor-pointer">
+              <div
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-950/40 transition-all duration-200 cursor-pointer"
+              >
                 <LogOut size={18} />
                 <span className="text-sm font-medium">Logout</span>
               </div>

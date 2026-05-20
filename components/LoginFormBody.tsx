@@ -90,7 +90,7 @@ export function LoginFormBody({
       {/* NISN */}
       <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible">
         <Label htmlFor="nisn" className="text-sm font-medium text-slate-300 mb-1.5 block">
-          Nomor Induk Siswa
+          Nomor Induk Siswa / Nomor Induk Guru
         </Label>
         <div className="relative group">
           <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 transition-colors group-focus-within:text-blue-400 z-10" />

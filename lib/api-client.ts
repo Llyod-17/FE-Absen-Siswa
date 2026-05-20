@@ -117,6 +117,8 @@ export const monitoringAPI = {
     if (params?.status && params.status !== 'all') searchParams.append('status', params.status)
     return apiCall(`/attendance/students?${searchParams.toString()}`)
   },
+
+  getClasses: () => apiCall('/classes'),
   
   updateStatus: (payload: { nisn: string; status: string }) =>
     apiCall('/attendance/status', {

@@ -63,6 +63,8 @@ export interface AttendanceStats {
   todayAttendance: number
   activeTokens: number
   totalAttendance: number
+  totalHadir?: number
+  totalTelat?: number
 }
 
 export interface ChartDataPoint {
@@ -77,5 +79,7 @@ export interface ApiResponse<T> {
 }
 
 export interface ApiError {
+  success?: boolean
+  code?: string
   message: string
 }

@@ -10,17 +10,19 @@ import {
   Activity,
   Calendar,
   ArrowUpRight,
+  Clock,
 } from 'lucide-react'
 import { StatsCard } from '@/components/stats-card'
 import { AttendanceChart } from '@/components/attendance-chart'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useAttendanceStats, useAttendanceChart } from '@/lib/api-hooks'
+import { useAttendanceStats, useAttendanceChart, useMonitoringData } from '@/lib/api-hooks'
 import { containerVariants, itemVariants, cardClass } from '@/lib/constants'
 
 
 export default function DashboardPage() {
   const { stats } = useAttendanceStats()
   const { data: chartData, loading: chartLoading } = useAttendanceChart()
+  const { data: monitoringData } = useMonitoringData({ class_group: 'all', status: 'all' })
 
   const chartFormatted = chartData && chartData.length > 0
   ? chartData.map((item: any) => ({
@@ -76,24 +78,28 @@ export default function DashboardPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4"
       >
         {[
           {
             icon: KeyRound, label: 'Total Sesi QR',
-            value: stats?.totalTokens || 0, color: 'blue', index: 0,
+            value: stats?.totalTokens || 0, color: 'blue' as const, index: 0,
           },
           {
             icon: CheckCircle, label: 'Siswa Hadir',
-            value: stats?.todayAttendance || 0, trend: 12, color: 'green', index: 1,
+            value: stats?.totalHadir ?? monitoringData?.summary?.hadir ?? 0, color: 'green' as const, index: 1,
+          },
+          {
+            icon: Clock, label: 'Siswa Telat',
+            value: stats?.totalTelat ?? monitoringData?.summary?.telat ?? 0, color: 'orange' as const, index: 2,
           },
           {
             icon: Zap, label: 'QR Sedang Aktif',
-            value: stats?.activeTokens || 0, color: 'orange', index: 2,
+            value: stats?.activeTokens || 0, color: 'slate' as const, index: 3,
           },
           {
             icon: Users, label: 'Total Pemindaian',
-            value: stats?.totalAttendance || 0, color: 'purple', index: 3,
+            value: stats?.totalAttendance || 0, color: 'purple' as const, index: 4,
           },
         ].map((card) => (
           <motion.div key={card.label} variants={itemVariants}>

@@ -42,7 +42,7 @@ const fieldVariants = {
   hidden: { opacity: 0, x: -12 },
   visible: (i: number) => ({
     opacity: 1, x: 0,
-    transition: { delay: i * 0.08 + 0.15, duration: 0.4, ease: 'easeOut' },
+    transition: { delay: i * 0.08 + 0.15, duration: 0.4, ease: 'easeOut' as any },
   }),
 }
 
@@ -84,14 +84,8 @@ export function ExportDataForm() {
 
     const result = await exportToExcel(values)
 
-    if (result.success && result.data) {
-      const worksheet = XLSX.utils.json_to_sheet(result.data)
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance')
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 25 }]
-      const filenameDate = values.attendanceDate || new Date().toISOString().split('T')[0]
-      XLSX.writeFile(workbook, `Attendance_${filenameDate}.xlsx`)
-      toast.success('Export Berhasil', `${result.data.length} data berhasil diekspor`)
+    if (result.success) {
+      toast.success('Export Berhasil', 'Data absensi berhasil diekspor dan diunduh.')
       form.reset()
     } else {
       toast.error('Export Gagal', 'Gagal mengekspor data.')

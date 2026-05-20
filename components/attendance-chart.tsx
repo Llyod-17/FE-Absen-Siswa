@@ -22,7 +22,7 @@ interface AttendanceChartProps {
 }
 
 /* ── Custom dark tooltip ── */
-function CustomTooltip({ active, payload, label }: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-slate-800/95 backdrop-blur-xl border border-slate-700/60 rounded-xl px-4 py-3 shadow-2xl shadow-black/40">

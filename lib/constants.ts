@@ -26,7 +26,7 @@ export const STATUS_LABELS: Record<AttendanceStatus, string> = {
    ANIMATION VARIANTS – reusable framer-motion presets
 ========================================================= */
 
-export const containerVariants = {
+export const containerVariants: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -34,7 +34,7 @@ export const containerVariants = {
   },
 }
 
-export const itemVariants = {
+export const itemVariants: any = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,

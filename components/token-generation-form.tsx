@@ -21,119 +21,113 @@ import {
 } from '@/components/ui/select'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { useGenerateToken, useTokens } from '@/lib/api-hooks'
-import { Zap, Copy, Check, Clock, Tag, Sparkles, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react'
+import { useAuthImage } from '@/lib/use-auth-image'
+import { QrPreviewDialog } from '@/components/qr-preview-dialog'
+import {
+  Zap, Copy, Check, Clock, Tag, Sparkles,
+  CheckCircle, AlertTriangle, X, Maximize2,
+} from 'lucide-react'
+
+/* ── Types ── */
 
 interface TokenGenerationFormProps {
   onTokenGenerated?: (token: string) => void
 }
 
-export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormProps) {
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null)
-  const [generatedTokenId, setGeneratedTokenId] = useState<number | null>(null)
-  const [generatedCategory, setGeneratedCategory] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [qrBlobUrl, setQrBlobUrl] = useState<string | null>(null)
-  const [qrLoading, setQrLoading] = useState(false)
+type TokenCategory = 'hadir' | 'telat'
 
-  const form = useForm({
-    defaultValues: { duration: '20', category: 'hadir' },
-  })
+interface GeneratedState {
+  code: string
+  id: number
+  category: TokenCategory
+}
+
+/* ── Helpers ── */
+
+const CATEGORY_STYLES = {
+  hadir: {
+    gradient: 'from-emerald-600 via-emerald-400 to-teal-400',
+    dot: 'bg-emerald-400',
+    text: 'text-emerald-400',
+    badge: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    glow: 'bg-emerald-500/5',
+  },
+  telat: {
+    gradient: 'from-amber-600 via-amber-400 to-yellow-400',
+    dot: 'bg-amber-400',
+    text: 'text-amber-400',
+    badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    glow: 'bg-amber-500/5',
+  },
+} as const
+
+/* ── Component ── */
+
+export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormProps) {
+  const [generated, setGenerated] = useState<GeneratedState | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+
+  const form = useForm({ defaultValues: { duration: '20', category: 'hadir' } })
 
   const { generate, generateHadir, generateTelat, loading: generating } = useGenerateToken()
   const { tokens: activeTokens, loading: loadingActiveTokens } = useTokens()
 
-  // Initialize from active token if one exists and we haven't generated one yet
+  // Reuse the shared hook for QR image fetching instead of duplicating fetch logic
+  const qrBlobUrl = useAuthImage(generated?.id ?? null)
+
+  const isDisabled = generating || loadingActiveTokens
+
+  // Initialize from an existing active token on mount
   useEffect(() => {
-    if (activeTokens.length > 0 && !generatedTokenId) {
-      // Get the first active token (most recent)
-      const latestActive = activeTokens[0]
-      setGeneratedToken(latestActive.token_code)
-      setGeneratedTokenId(latestActive.id)
-      setGeneratedCategory(latestActive.category)
+    if (activeTokens.length > 0 && !generated && !dismissed) {
+      const latest = activeTokens[0]
+      setGenerated({ code: latest.token_code, id: latest.id, category: latest.category })
     }
-  }, [activeTokens, generatedTokenId])
+  }, [activeTokens, generated, dismissed])
 
-  // Fetch QR image with auth header whenever a new token is generated
-  useEffect(() => {
-    if (!generatedTokenId) {
-      setQrBlobUrl(null)
-      return
-    }
-
-    let cancelled = false
-    setQrLoading(true)
-
-    const fetchQR = async () => {
-      try {
-        const headers: Record<string, string> = {}
-        const authToken = localStorage.getItem('authToken')
-        if (authToken) headers['Authorization'] = `Bearer ${authToken}`
-
-        const res = await fetch(`/api/v1/token/${generatedTokenId}/image`, { headers })
-        if (!res.ok) throw new Error('QR fetch failed')
-
-        const blob = await res.blob()
-        if (!cancelled) {
-          const url = URL.createObjectURL(blob)
-          setQrBlobUrl(url)
-        }
-      } catch {
-        if (!cancelled) setQrBlobUrl(null)
-      } finally {
-        if (!cancelled) setQrLoading(false)
-      }
-    }
-
-    fetchQR()
-    return () => {
-      cancelled = true
-      // Revoke old blob URL to prevent memory leak
-      setQrBlobUrl((prev) => { if (prev) URL.revokeObjectURL(prev); return null })
-    }
-  }, [generatedTokenId])
+  /* ── Handlers ── */
 
   async function onSubmit(values: { duration: string; category: string }) {
-    setGeneratedToken(null)
-    setGeneratedTokenId(null)
     const result = await generate({
       duration: parseInt(values.duration),
-      category: values.category as 'hadir' | 'telat',
+      category: values.category as TokenCategory,
     })
     if (result) {
-      setGeneratedToken(result.token_code)
-      setGeneratedTokenId(result.id)
-      setGeneratedCategory(values.category)
+      const state: GeneratedState = { code: result.token_code, id: result.id, category: values.category as TokenCategory }
+      setGenerated(state)
+      setDismissed(false)
       onTokenGenerated?.(result.token_code)
     }
   }
 
-  async function handleQuickGenerate(type: 'hadir' | 'telat') {
-    setGeneratedToken(null)
-    setGeneratedTokenId(null)
+  async function handleQuickGenerate(type: TokenCategory) {
     const result = type === 'hadir' ? await generateHadir() : await generateTelat()
     if (result) {
-      setGeneratedToken(result.token_code)
-      setGeneratedTokenId(result.id)
-      setGeneratedCategory(type)
+      const state: GeneratedState = { code: result.token_code, id: result.id, category: type }
+      setGenerated(state)
+      setDismissed(false)
       onTokenGenerated?.(result.token_code)
     }
   }
 
   function handleCopy() {
-    if (!generatedToken) return
-    navigator.clipboard.writeText(generatedToken)
+    if (!generated) return
+    navigator.clipboard.writeText(generated.code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
 
   function handleReset() {
-    setGeneratedToken(null)
-    setGeneratedTokenId(null)
-    setGeneratedCategory(null)
-    if (qrBlobUrl) URL.revokeObjectURL(qrBlobUrl)
-    setQrBlobUrl(null)
+    setGenerated(null)
+    setDismissed(true)
+    setCopied(false)
     form.reset()
   }
+
+  /* ── Derived values ── */
+  const styles = generated ? CATEGORY_STYLES[generated.category] : null
+  const categoryLabel = generated?.category === 'telat' ? 'TELAT' : 'HADIR'
 
   return (
     <motion.div
@@ -142,7 +136,7 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="max-w-lg"
     >
-      {/* ── Page Header ── */}
+      {/* Page Header */}
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
           <Zap className="h-6 w-6 text-orange-400" />
@@ -156,7 +150,7 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
       <AnimatePresence mode="wait">
 
         {/* ── FORM STATE ── */}
-        {!generatedToken && (
+        {!generated && (
           <motion.div
             key="form"
             initial={{ opacity: 0, y: 16 }}
@@ -165,12 +159,11 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl shadow-black/30 overflow-hidden"
           >
-            {/* Top accent bar */}
             <div className="h-1 w-full bg-gradient-to-r from-orange-600 via-orange-400 to-amber-400" />
 
             <div className="p-6 space-y-6">
 
-              {/* ── Quick Generate Buttons ── */}
+              {/* Quick Generate */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -180,28 +173,18 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     type="button"
-                    disabled={generating || loadingActiveTokens}
+                    disabled={isDisabled}
                     onClick={() => handleQuickGenerate('hadir')}
-                    className="
-                      h-12 rounded-xl font-semibold text-sm
-                      bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98]
-                      transition-all duration-200 shadow-lg shadow-emerald-900/30
-                      disabled:opacity-60 disabled:cursor-not-allowed
-                    "
+                    className="h-12 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-emerald-900/30 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Generate QR Hadir
                   </Button>
                   <Button
                     type="button"
-                    disabled={generating || loadingActiveTokens}
+                    disabled={isDisabled}
                     onClick={() => handleQuickGenerate('telat')}
-                    className="
-                      h-12 rounded-xl font-semibold text-sm
-                      bg-amber-600 hover:bg-amber-500 active:scale-[0.98]
-                      transition-all duration-200 shadow-lg shadow-amber-900/30
-                      disabled:opacity-60 disabled:cursor-not-allowed
-                    "
+                    className="h-12 rounded-xl font-semibold text-sm bg-amber-600 hover:bg-amber-500 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-amber-900/30 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <AlertTriangle className="h-4 w-4 mr-2" />
                     Generate QR Telat
@@ -209,18 +192,16 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                 </div>
               </motion.div>
 
-              {/* ── Divider ── */}
+              {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-slate-700/50" />
                 <span className="text-xs text-slate-600 uppercase tracking-widest">atau custom</span>
                 <div className="flex-1 h-px bg-slate-700/50" />
               </div>
 
-              {/* ── Custom Form ── */}
+              {/* Custom Form */}
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-
-                  {/* ── Two fields side by side ── */}
                   <div className="grid grid-cols-2 gap-4">
 
                     {/* Duration */}
@@ -234,11 +215,7 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                         name="duration"
                         render={({ field }) => (
                           <FormItem>
-                            <div className="
-                              bg-slate-800/60 border border-slate-700/60 rounded-xl p-4
-                              hover:border-slate-600 focus-within:border-orange-500/60
-                              transition-all duration-200 group
-                            ">
+                            <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 hover:border-slate-600 focus-within:border-orange-500/60 transition-all duration-200 group">
                               <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
                                   <Clock className="h-3 w-3 text-orange-400" />
@@ -249,13 +226,8 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                                 <div className="flex items-baseline gap-1.5">
                                   <Input
                                     type="number"
-                                    disabled={generating || loadingActiveTokens}
-                                    className="
-                                      border-0 bg-transparent text-white text-3xl font-bold h-auto p-0
-                                      focus-visible:ring-0 focus-visible:ring-offset-0
-                                      [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-                                      w-full
-                                    "
+                                    disabled={isDisabled}
+                                    className="border-0 bg-transparent text-white text-3xl font-bold h-auto p-0 focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full"
                                     {...field}
                                   />
                                   <span className="text-sm text-slate-500 shrink-0">menit</span>
@@ -279,11 +251,7 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                         name="category"
                         render={({ field }) => (
                           <FormItem>
-                            <div className="
-                              bg-slate-800/60 border border-slate-700/60 rounded-xl p-4
-                              hover:border-slate-600 focus-within:border-orange-500/60
-                              transition-all duration-200 group
-                            ">
+                            <div className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 hover:border-slate-600 focus-within:border-orange-500/60 transition-all duration-200 group">
                               <div className="flex items-center gap-2 mb-3">
                                 <div className="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
                                   <Tag className="h-3 w-3 text-amber-400" />
@@ -291,16 +259,8 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                                 <span className="text-xs font-medium text-slate-400">Kategori</span>
                               </div>
                               <FormControl>
-                                <Select
-                                  value={field.value}
-                                  onValueChange={field.onChange}
-                                  disabled={generating || loadingActiveTokens}
-                                >
-                                  <SelectTrigger className="
-                                    border-0 bg-transparent text-white text-lg font-bold h-auto p-0
-                                    focus:ring-0 focus:ring-offset-0 w-full
-                                    shadow-none
-                                  ">
+                                <Select value={field.value} onValueChange={field.onChange} disabled={isDisabled}>
+                                  <SelectTrigger className="border-0 bg-transparent text-white text-lg font-bold h-auto p-0 focus:ring-0 focus:ring-offset-0 w-full shadow-none">
                                     <SelectValue placeholder="Pilih kategori" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
@@ -339,33 +299,20 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                   </motion.div>
 
                   {/* Submit */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                  >
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                     <Button
                       type="submit"
-                      disabled={generating || loadingActiveTokens}
-                      className="
-                        w-full h-12 rounded-xl font-semibold text-sm
-                        bg-orange-500 hover:bg-orange-400 active:scale-[0.98]
-                        transition-all duration-200 shadow-lg shadow-orange-900/40
-                        disabled:opacity-60 disabled:cursor-not-allowed
-                      "
+                      disabled={isDisabled}
+                      className="w-full h-12 rounded-xl font-semibold text-sm bg-orange-500 hover:bg-orange-400 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-orange-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <AnimatePresence mode="wait">
-                        {generating || loadingActiveTokens ? (
-                          <motion.div key="loading"
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="flex items-center gap-2"
-                          >
+                        {isDisabled ? (
+                          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
                             <LoadingSpinner size="sm" />
                             <span>Generating...</span>
                           </motion.div>
                         ) : (
-                          <motion.div key="idle"
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="flex items-center gap-2"
-                          >
+                          <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2">
                             <Sparkles className="h-4 w-4" />
                             <span>Buat QR Custom</span>
                           </motion.div>
@@ -373,15 +320,14 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                       </AnimatePresence>
                     </Button>
                   </motion.div>
-
                 </form>
               </Form>
             </div>
           </motion.div>
         )}
 
-        {/* ── TOKEN RESULT STATE ── */}
-        {generatedToken && (
+        {/* ── RESULT STATE ── */}
+        {generated && styles && (
           <motion.div
             key="result"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -390,58 +336,38 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-xl shadow-black/30 overflow-hidden"
           >
-            {/* Top accent bar — green for hadir, amber for telat */}
-            <div className={`h-1 w-full bg-gradient-to-r ${
-              generatedCategory === 'telat'
-                ? 'from-amber-600 via-amber-400 to-yellow-400'
-                : 'from-emerald-600 via-emerald-400 to-teal-400'
-            }`} />
+            <div className={`h-1 w-full bg-gradient-to-r ${styles.gradient}`} />
 
             <div className="p-6 space-y-5">
 
-              {/* Status badge */}
+              {/* Status header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full animate-pulse ${
-                    generatedCategory === 'telat' ? 'bg-amber-400' : 'bg-emerald-400'
-                  }`} />
-                  <span className={`text-xs font-semibold uppercase tracking-widest ${
-                    generatedCategory === 'telat' ? 'text-amber-400' : 'text-emerald-400'
-                  }`}>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${styles.dot}`} />
+                  <span className={`text-xs font-semibold uppercase tracking-widest ${styles.text}`}>
                     Kode Aktif
                   </span>
-                  {/* Category badge */}
-                  <span className={`ml-2 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-                    generatedCategory === 'telat'
-                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                  }`}>
-                    {generatedCategory === 'telat' ? 'TELAT' : 'HADIR'}
+                  <span className={`ml-2 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${styles.badge}`}>
+                    {categoryLabel}
                   </span>
                 </div>
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-400 transition-colors"
+                  className="flex items-center justify-center w-7 h-7 rounded-full bg-slate-800/50 hover:bg-slate-700/80 text-slate-400 hover:text-white transition-colors"
+                  title="Tutup"
                 >
-                  <RefreshCw className="h-3 w-3" />
-                  Buat Baru
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* QR Code Display — the hero element */}
-              <div className="
-                bg-slate-800/80 border border-slate-700/60 rounded-2xl
-                px-6 py-6 text-center relative overflow-hidden
-              ">
-                {/* subtle glow */}
-                <div className={`absolute inset-0 blur-xl pointer-events-none ${
-                  generatedCategory === 'telat' ? 'bg-amber-500/5' : 'bg-emerald-500/5'
-                }`} />
+              {/* QR Code display */}
+              <div className="bg-slate-800/80 border border-slate-700/60 rounded-2xl px-6 py-6 text-center relative overflow-hidden">
+                <div className={`absolute inset-0 blur-xl pointer-events-none ${styles.glow}`} />
 
                 <p className="text-xs text-slate-500 mb-4 uppercase tracking-widest relative z-10">QR Code Absensi</p>
 
-                {/* QR Image from backend */}
-                {qrLoading && (
+                {/* Loading state */}
+                {!qrBlobUrl && (
                   <div className="relative z-10 flex items-center justify-center py-4">
                     <div className="w-[200px] h-[200px] bg-slate-700/50 rounded-2xl animate-pulse flex items-center justify-center">
                       <span className="text-xs text-slate-500">Memuat QR...</span>
@@ -449,6 +375,7 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                   </div>
                 )}
 
+                {/* QR image with hover-to-enlarge */}
                 {qrBlobUrl && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -456,20 +383,34 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                     transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 20 }}
                     className="relative z-10 flex flex-col items-center"
                   >
-                    <div className="bg-white rounded-2xl p-3 shadow-lg shadow-black/20 inline-block">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={qrBlobUrl}
-                        alt={`QR Code: ${generatedToken}`}
-                        width={200}
-                        height={200}
-                        className="block rounded-lg"
-                      />
-                    </div>
+                    <QrPreviewDialog
+                      qrUrl={qrBlobUrl}
+                      tokenCode={generated.code}
+                      category={generated.category}
+                      isActive={true}
+                      trigger={
+                        <button className="relative group rounded-2xl p-3 bg-white shadow-lg shadow-black/20 inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={qrBlobUrl}
+                            alt={`QR Code: ${generated.code}`}
+                            width={200}
+                            height={200}
+                            className="block rounded-lg transition-all group-hover:blur-[2px]"
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all rounded-2xl cursor-pointer backdrop-blur-sm">
+                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
+                              <Maximize2 className="w-6 h-6 text-white" />
+                            </div>
+                            <span className="text-white text-xs font-semibold uppercase tracking-wider">Perbesar</span>
+                          </div>
+                        </button>
+                      }
+                    />
                   </motion.div>
                 )}
 
-                {/* Text code below QR */}
+                {/* Manual code */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -478,52 +419,48 @@ export function TokenGenerationForm({ onTokenGenerated }: TokenGenerationFormPro
                 >
                   <p className="text-xs text-slate-600 mb-1">Kode Manual</p>
                   <p className="text-2xl font-black font-mono text-white tracking-[0.2em]">
-                    {generatedToken}
+                    {generated.code}
                   </p>
                 </motion.div>
               </div>
 
-              {/* Copy Button */}
-              <Button
-                onClick={handleCopy}
-                className={`
-                  w-full h-12 rounded-xl font-semibold text-sm
-                  transition-all duration-300 active:scale-[0.98]
-                  ${copied
-                    ? 'bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/40'
-                    : 'bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-200'
-                  }
-                `}
-              >
-                <AnimatePresence mode="wait">
-                  {copied ? (
-                    <motion.div key="copied"
-                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Check className="h-4 w-4" />
-                      Kode Tersalin!
-                    </motion.div>
-                  ) : (
-                    <motion.div key="copy"
-                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Salin Kode
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
+              {/* Action buttons */}
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={handleCopy}
+                  className={`h-12 rounded-xl font-semibold text-sm transition-all duration-300 active:scale-[0.98] ${
+                    copied
+                      ? 'bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/40'
+                      : 'bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-200'
+                  }`}
+                >
+                  <AnimatePresence mode="wait">
+                    {copied ? (
+                      <motion.div key="copied" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex items-center gap-2">
+                        <Check className="h-4 w-4" />
+                        Tersalin!
+                      </motion.div>
+                    ) : (
+                      <motion.div key="copy" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="flex items-center gap-2">
+                        <Copy className="h-4 w-4" />
+                        Salin Kode
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+
+                <Button
+                  onClick={handleReset}
+                  className="h-12 rounded-xl font-semibold text-sm bg-slate-800/80 hover:bg-slate-700 border border-slate-600/50 text-slate-300 hover:text-white transition-all duration-300 active:scale-[0.98]"
+                >
+                  Tutup QR
+                </Button>
+              </div>
 
               {/* Footer info */}
               <p className="text-center text-xs text-slate-600">
                 Bagikan kode ini kepada siswa · Kategori:{' '}
-                <span className={`font-semibold ${
-                  generatedCategory === 'telat' ? 'text-amber-400' : 'text-emerald-400'
-                }`}>
-                  {generatedCategory === 'telat' ? 'TELAT' : 'HADIR'}
-                </span>
+                <span className={`font-semibold ${styles.text}`}>{categoryLabel}</span>
               </p>
             </div>
           </motion.div>

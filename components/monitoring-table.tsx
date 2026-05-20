@@ -56,12 +56,12 @@ export function MonitoringTable({ students, loading, onUpdateStatus }: Monitorin
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-slate-400 uppercase bg-slate-800/50 border-b border-slate-700/50">
             <tr>
-              <th className="px-6 py-4 font-medium">NISN</th>
-              <th className="px-6 py-4 font-medium">Nama Siswa</th>
-              <th className="px-6 py-4 font-medium">Kelas</th>
-              <th className="px-6 py-4 font-medium">Waktu Absen</th>
-              <th className="px-6 py-4 font-medium text-center">Status</th>
-              <th className="px-6 py-4 font-medium text-right">Aksi</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">NISN</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Nama Siswa</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Kelas</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium">Waktu Absen</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-center">Status</th>
+              <th className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-700/50">
@@ -78,23 +78,23 @@ export function MonitoringTable({ students, loading, onUpdateStatus }: Monitorin
                   transition={{ delay: Math.min(idx * 0.05, 0.5) }}
                   className="hover:bg-slate-800/40 transition-colors"
                 >
-                  <td className="px-6 py-4 font-medium text-slate-300">{student.nisn}</td>
-                  <td className="px-6 py-4 text-white font-semibold">{student.name}</td>
-                  <td className="px-6 py-4 text-slate-400">{student.class_group}</td>
-                  <td className="px-6 py-4 text-slate-400">
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 font-medium text-slate-300 text-xs sm:text-sm">{student.nisn}</td>
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 text-white font-semibold text-xs sm:text-sm">{student.name}</td>
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 text-slate-400 text-xs sm:text-sm">{student.class_group}</td>
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 text-slate-400 text-xs sm:text-sm">
                     {student.timestamp ? new Date(student.timestamp).toLocaleTimeString('id-ID', {
                       hour: '2-digit', minute: '2-digit'
                     }) : '-'}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 text-center">
                     {isEditing ? (
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                         <Select
                           disabled={updating}
                           defaultValue={student.status}
                           onValueChange={(val) => handleStatusChange(student.nisn, val)}
                         >
-                          <SelectTrigger className="w-[130px] h-8 text-xs bg-slate-800 border-slate-600 focus:ring-blue-500">
+                          <SelectTrigger className="w-[100px] sm:w-[130px] h-8 text-[10px] sm:text-xs bg-slate-800 border-slate-600 focus:ring-blue-500">
                             <SelectValue placeholder="Pilih status" />
                           </SelectTrigger>
                           <SelectContent className="bg-slate-800 border-slate-700 text-white">
@@ -108,7 +108,7 @@ export function MonitoringTable({ students, loading, onUpdateStatus }: Monitorin
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-slate-400 hover:text-white"
+                          className="h-8 w-8 text-slate-400 hover:text-white shrink-0"
                           onClick={() => setEditingNisn(null)}
                           disabled={updating}
                         >
@@ -116,21 +116,21 @@ export function MonitoringTable({ students, loading, onUpdateStatus }: Monitorin
                         </Button>
                       </div>
                     ) : (
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${statColor}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase border ${statColor}`}>
                         {statLabel}
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-3 sm:px-6 sm:py-4 text-right">
                     {!isEditing && (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setEditingNisn(student.nisn)}
-                        className="h-8 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                        className="h-8 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 px-2 sm:px-3"
                       >
-                        <Edit2 className="h-3 w-3 mr-1.5" />
-                        Ubah
+                        <Edit2 className="h-3 w-3 sm:mr-1.5 shrink-0" />
+                        <span className="hidden sm:inline">Ubah</span>
                       </Button>
                     )}
                   </td>
