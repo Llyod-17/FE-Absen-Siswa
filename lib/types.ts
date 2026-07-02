@@ -23,7 +23,7 @@ export interface TokenResponse {
   message?: string
 }
 
-export type AttendanceStatus = 'hadir' | 'telat' | 'alfa' | 'sakit' | 'izin' | 'belum_absen'
+export type AttendanceStatus = 'hadir' | 'telat' | 'alfa' | 'sakit' | 'belum_absen'
 
 export interface AttendanceRecord {
   id: string
@@ -40,7 +40,6 @@ export interface MonitoringSummary {
   telat: number
   alfa: number
   sakit: number
-  izin: number
   belum_absen: number
 }
 
@@ -65,6 +64,8 @@ export interface AttendanceStats {
   totalAttendance: number
   totalHadir?: number
   totalTelat?: number
+  totalAlfa?: number
+  totalSakit?: number
 }
 
 export interface ChartDataPoint {
@@ -83,3 +84,52 @@ export interface ApiError {
   code?: string
   message: string
 }
+
+export interface BackendDashboardStats {
+  total_token: number
+  total_absen_hari_ini: number
+  token_aktif: number
+  token_hari_ini: number
+  total_hadir_hari_ini: number
+  total_telat_hari_ini: number
+  total_alfa_hari_ini: number
+  total_sakit_hari_ini: number
+}
+
+export interface BackendStudent {
+  id: number
+  nisn: string
+  full_name?: string
+  name?: string
+  class_group: string
+  status: AttendanceStatus
+  clock_in_time?: string
+}
+
+export interface BackendMonitoringData {
+  summary: MonitoringSummary
+  data: BackendStudent[]
+  date?: string
+}
+
+export interface MonitoringApiResponse extends ApiResponse<BackendStudent[]> {
+  date?: string
+  summary: MonitoringSummary
+}
+
+export interface TopAlfaStudent {
+  name: string
+  nisn: string
+  alfaCount: number
+  class_group: string
+}
+
+export interface MonthlyRecapData {
+  month: string
+  Hadir: number
+  Sakit: number
+  Alfa: number
+  Izin: number
+  rate: number
+}
+

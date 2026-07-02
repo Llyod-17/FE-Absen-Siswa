@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 
 import "@/app/globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -7,9 +6,6 @@ import { Header } from "@/components/header";
 import { SidebarProvider } from "@/context/sidebar-context";
 import { MainContent } from "@/components/main-context";
 import AdminGuard from "@/components/AdminGuard";
-
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Token & Attendance Management",
@@ -25,7 +21,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0a0f1e",
+  themeColor: "#ffffff",
 };
 
 export default function AdminLayout({
@@ -36,25 +32,9 @@ export default function AdminLayout({
   return (
     <AdminGuard>
       <SidebarProvider>
-        <div className="min-h-screen bg-[#0a0f1e]">
-          {/* Ambient background effects */}
-          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-            <div className="absolute top-[-15%] left-[10%] w-[500px] h-125 rounded-full bg-blue-600/10 blur-[120px]" />
-            <div className="absolute bottom-[-20%] right-[5%] w-[450px] h-125 rounded-full bg-indigo-600/8 blur-[100px]" />
-            <div
-              className="absolute inset-0 opacity-[0.025]"
-              style={{
-                backgroundImage: `linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)`,
-                backgroundSize: "40px 40px",
-              }}
-            />
-          </div>
-
+        <div className="admin-theme min-h-screen bg-background text-foreground">
           <AppSidebar />
           <Header />
-
-          {/* MainContent reads collapsed state from context to set correct margin */}
           <MainContent>{children}</MainContent>
         </div>
       </SidebarProvider>

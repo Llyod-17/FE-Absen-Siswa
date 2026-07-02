@@ -3,7 +3,7 @@
 import { useEffect, useRef, useId } from "react"
 import { Html5Qrcode } from "html5-qrcode"
 import { motion, AnimatePresence } from "framer-motion"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, ScanLine } from "lucide-react"
 
 import {
     Dialog,
@@ -99,9 +99,10 @@ export function QRScannerModal({
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="bg-slate-900 text-white border-slate-700">
+            <DialogContent className="bg-[#f4f5f6] text-[#111111] border-[#e2e8f0] shadow-xl">
 
-                <DialogTitle className="text-lg font-bold">
+                <DialogTitle className="text-lg font-bold text-[#111111] flex items-center gap-2">
+                    <ScanLine className="h-5 w-5 text-[#c63535]" />
                     Scan QR Absensi
                 </DialogTitle>
 
@@ -115,9 +116,9 @@ export function QRScannerModal({
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
                         >
-                            <div className="flex items-start gap-2.5 rounded-xl p-3 border bg-amber-950/60 border-amber-700/50">
-                                <AlertCircle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-                                <p className="text-sm text-amber-300">{expiredError}</p>
+                            <div className="flex items-start gap-2.5 rounded-md p-3 border bg-[#b89750]/10 border-[#b89750]/20">
+                                <AlertCircle className="h-4 w-4 text-[#b89750] shrink-0 mt-0.5" />
+                                <p className="text-sm text-[#7c6330] font-medium">{expiredError}</p>
                             </div>
                         </motion.div>
                     )}
@@ -125,10 +126,10 @@ export function QRScannerModal({
 
                 <div
                     id={readerId}
-                    className="rounded-xl overflow-hidden min-h-[300px]"
+                    className="rounded-md overflow-hidden min-h-[300px] border border-[#e2e8f0]"
                 />
 
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[#8e8b82]">
                     Arahkan kamera ke QR guru
                 </p>
 

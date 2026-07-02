@@ -7,22 +7,24 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard,
-  Key,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Download,
   ShieldCheck,
   Activity,
+  Users,
+  Key,
 } from 'lucide-react'
 import { useSidebar } from '@/context/sidebar-context'
 import { authAPI } from '@/api/auth'
 
 const navItems = [
-  { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
-  { label: 'Data Kehadiran', href: '/admin/monitoring', icon: Activity },
-  { label: 'QR Absensi', href: '/admin/token', icon: Key },
-  { label: 'Unduh Laporan', href: '/admin/export', icon: Download },
+  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { label: 'Absensi Harian', href: '/admin/monitoring', icon: Activity },
+  { label: 'Data Siswa', href: '/admin/students', icon: Users },
+  { label: 'Laporan', href: '/admin/export', icon: Download },
+  { label: 'Pengaturan', href: '/admin/token', icon: Key },
 ]
 
 export function AppSidebar() {
@@ -44,14 +46,13 @@ export function AppSidebar() {
         className="
           fixed left-0 top-0 h-screen z-40
           hidden lg:flex flex-col
-          bg-slate-900/90 backdrop-blur-xl
-          border-r border-slate-700/50
-          shadow-2xl shadow-black/40
+          bg-sidebar
+          border-r border-sidebar-border
           overflow-hidden
         "
       >
         {/* Brand */}
-        <div className="flex items-center justify-between px-4 h-16 border-b border-slate-700/50 shrink-0">
+        <div className="flex items-center justify-between px-4 h-16 border-b border-sidebar-border shrink-0">
           <AnimatePresence>
             {!collapsed && (
               <motion.div
@@ -61,10 +62,10 @@ export function AppSidebar() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-2.5 overflow-hidden"
               >
-                <div className="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="h-4 w-4 text-blue-400" />
+                <div className="w-8 h-8 rounded-md bg-sidebar-primary flex items-center justify-center shrink-0">
+                  <ShieldCheck className="h-4 w-4 text-sidebar-primary-foreground" />
                 </div>
-                <span className="text-white font-bold text-sm tracking-wide whitespace-nowrap">
+                <span className="text-sidebar-foreground font-bold text-sm tracking-wide whitespace-nowrap">
                   Absen Admin
                 </span>
               </motion.div>
@@ -72,8 +73,8 @@ export function AppSidebar() {
           </AnimatePresence>
 
           {collapsed && (
-            <div className="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center mx-auto">
-              <ShieldCheck className="h-4 w-4 text-blue-400" />
+            <div className="w-8 h-8 rounded-md bg-sidebar-primary flex items-center justify-center mx-auto">
+              <ShieldCheck className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
           )}
 
@@ -82,7 +83,7 @@ export function AppSidebar() {
               variant="ghost"
               size="icon"
               onClick={() => setCollapsed(true)}
-              className="text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg h-8 w-8 shrink-0"
+              className="text-sidebar-foreground/75 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md h-8 w-8 shrink-0 border border-transparent"
             >
               <ChevronLeft size={16} />
             </Button>
@@ -90,9 +91,9 @@ export function AppSidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-5 space-y-1 overflow-hidden">
+        <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
           {!collapsed && (
-            <p className="text-[10px] uppercase tracking-widest text-slate-600 font-semibold px-3 mb-3">
+            <p className="text-[10px] uppercase tracking-[1.5px] text-sidebar-foreground/45 font-bold px-3 mb-3">
               Navigasi
             </p>
           )}
@@ -112,18 +113,18 @@ export function AppSidebar() {
                   <div
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer',
+                      'flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group cursor-pointer border border-transparent',
                       collapsed && 'justify-center px-0',
                       isActive
-                        ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-sidebar-accent border border-sidebar-border text-sidebar-foreground font-semibold'
+                        : 'text-sidebar-foreground/75 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
                     )}
                   >
                     <Icon
                       size={18}
                       className={cn(
-                        'shrink-0 transition-transform group-hover:scale-110',
-                        isActive && 'text-blue-400'
+                        'shrink-0 transition-transform group-hover:scale-105',
+                        isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80'
                       )}
                     />
 
@@ -134,19 +135,15 @@ export function AppSidebar() {
                           animate={{ opacity: 1, width: 'auto' }}
                           exit={{ opacity: 0, width: 0 }}
                           transition={{ duration: 0.2 }}
-                          className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                          className={cn(
+                            'text-sm whitespace-nowrap overflow-hidden',
+                            isActive ? 'font-medium text-sidebar-foreground' : 'font-light'
+                          )}
                         >
                           {item.label}
                         </motion.span>
                       )}
                     </AnimatePresence>
-
-                    {isActive && !collapsed && (
-                      <motion.div
-                        layoutId="activeIndicator"
-                        className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400"
-                      />
-                    )}
                   </div>
                 </Link>
               </motion.div>
@@ -155,13 +152,13 @@ export function AppSidebar() {
         </nav>
 
         {/* Logout */}
-        <div className="p-3 border-t border-slate-700/50 shrink-0">
+        <div className="p-3 border-t border-sidebar-border shrink-0">
           <div
-            onClick={handleLogout} // ✅ ACTIVE LOGOUT
+            onClick={handleLogout}
             title={collapsed ? 'Logout' : undefined}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/70',
-              'hover:text-red-400 hover:bg-red-950/40 transition-all duration-200 cursor-pointer',
+              'flex items-center gap-3 px-3 py-2.5 rounded-md text-[#c63535]',
+              'hover:bg-[#c63535]/10 border border-transparent transition-all duration-200 cursor-pointer',
               collapsed && 'justify-center px-0'
             )}
           >
@@ -173,7 +170,7 @@ export function AppSidebar() {
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                  className="text-sm font-semibold whitespace-nowrap overflow-hidden"
                 >
                   Logout
                 </motion.span>
@@ -195,11 +192,11 @@ export function AppSidebar() {
             className="
               fixed top-[72px] z-50
               hidden lg:flex
-              w-6 h-6 rounded-full
-              bg-slate-800 border border-slate-600
+              w-6 h-6 rounded-md
+              bg-[#0f0f11] border border-[rgba(255,255,255,0.08)]
               items-center justify-center
-              text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700
-              transition-colors shadow-lg shadow-black/30
+              text-[rgba(244,245,246,0.7)] hover:text-[#f4f5f6] hover:bg-[rgba(255,255,255,0.05)]
+              transition-colors cursor-pointer
             "
           >
             <ChevronRight size={12} />

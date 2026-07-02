@@ -13,14 +13,16 @@ import {
   ShieldCheck,
   X,
   Activity,
+  Users,
 } from 'lucide-react'
 import { authAPI } from '@/api/auth'
 
 const navItems = [
-  { label: 'Ringkasan', href: '/admin', icon: LayoutDashboard },
-  { label: 'Data Kehadiran', href: '/admin/monitoring', icon: Activity },
-  { label: 'QR Absensi', href: '/admin/token', icon: Key },
-  { label: 'Unduh Laporan', href: '/admin/export', icon: Download },
+  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { label: 'Absensi Harian', href: '/admin/monitoring', icon: Activity },
+  { label: 'Data Siswa', href: '/admin/students', icon: Users },
+  { label: 'Laporan', href: '/admin/export', icon: Download },
+  { label: 'Pengaturan', href: '/admin/token', icon: Key },
 ]
 
 interface MobileSidebarDrawerProps {
@@ -48,7 +50,7 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
           />
 
           {/* Drawer */}
@@ -59,18 +61,17 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="
               fixed left-0 top-0 h-screen w-72 z-50 lg:hidden flex flex-col
-              bg-slate-900/95 backdrop-blur-xl
-              border-r border-slate-700/50
-              shadow-2xl shadow-black/60
+              bg-[#0f0f11]
+              border-r border-[rgba(255,255,255,0.08)]
             "
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-5 border-b border-slate-700/50">
+            <div className="flex items-center justify-between px-5 py-5 border-b border-[rgba(255,255,255,0.08)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center">
-                  <ShieldCheck className="h-4 w-4 text-blue-400" />
+                <div className="w-8 h-8 rounded-md bg-[#c63535] flex items-center justify-center">
+                  <ShieldCheck className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-white font-bold text-sm tracking-wide">
+                <span className="text-[#f4f5f6] font-bold text-sm tracking-wide">
                   Absen Admin
                 </span>
               </div>
@@ -78,15 +79,15 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="text-slate-400 hover:text-white hover:bg-slate-800/60 h-8 w-8 rounded-lg"
+                className="text-[rgba(244,245,246,0.7)] hover:text-[#f4f5f6] hover:bg-[rgba(255,255,255,0.05)] h-8 w-8 rounded-md border border-transparent cursor-pointer"
               >
                 <X size={16} />
               </Button>
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 px-3 py-5 space-y-1">
-              <p className="text-[10px] uppercase tracking-widest text-slate-600 font-semibold px-3 mb-3">
+            <nav className="flex-1 px-3 py-5 space-y-1.5 overflow-y-auto">
+              <p className="text-[10px] uppercase tracking-[1.5px] text-[rgba(244,245,246,0.4)] font-bold px-3 mb-3">
                 Navigasi
               </p>
               {navItems.map((item, i) => {
@@ -102,20 +103,19 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
                     <Link href={item.href} onClick={onClose}>
                       <div
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
+                          'flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 cursor-pointer border border-transparent',
                           isActive
-                            ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                            ? 'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-[#f4f5f6]'
+                            : 'text-[rgba(244,245,246,0.7)] hover:text-[#f4f5f6] hover:bg-[rgba(255,255,255,0.03)]'
                         )}
                       >
                         <Icon
                           size={18}
-                          className={cn('shrink-0', isActive && 'text-blue-400')}
+                          className={cn('shrink-0', isActive ? 'text-[#b89750]' : 'text-[rgba(244,245,246,0.5)]')}
                         />
-                        <span className="text-sm font-medium">{item.label}</span>
-                        {isActive && (
-                          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
-                        )}
+                        <span className={cn('text-sm', isActive ? 'font-medium text-[#f4f5f6]' : 'font-light')}>
+                          {item.label}
+                        </span>
                       </div>
                     </Link>
                   </motion.div>
@@ -123,14 +123,20 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
               })}
             </nav>
 
-            {/* Footer */}
-            <div className="p-3 border-t border-slate-700/50">
+            {/* Logout */}
+            <div className="p-3 border-t border-[rgba(255,255,255,0.08)] shrink-0">
               <div
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/70 hover:text-red-400 hover:bg-red-950/40 transition-all duration-200 cursor-pointer"
+                onClick={() => {
+                  handleLogout()
+                  onClose()
+                }}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-md text-[#c63535]',
+                  'hover:bg-[#c63535]/10 border border-transparent transition-all duration-200 cursor-pointer'
+                )}
               >
-                <LogOut size={18} />
-                <span className="text-sm font-medium">Logout</span>
+                <LogOut size={18} className="shrink-0" />
+                <span className="text-sm font-semibold">Logout</span>
               </div>
             </div>
           </motion.div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { LucideIcon, TrendingUp } from 'lucide-react'
+import { LucideIcon } from 'lucide-react'
 
 interface StatsCardProps {
   icon: LucideIcon
@@ -14,34 +14,34 @@ interface StatsCardProps {
 
 const colorConfig = {
   blue: {
-    icon: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
-    glow: 'from-blue-600/5',
-    accent: 'bg-blue-500',
+    accent: 'bg-[#c63535]',
+    icon: 'text-[#c63535]',
+    iconBg: 'bg-[#c63535]/10',
   },
   green: {
-    icon: 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400',
-    glow: 'from-emerald-600/5',
-    accent: 'bg-emerald-500',
+    accent: 'bg-[#008751]',
+    icon: 'text-[#008751]',
+    iconBg: 'bg-[#008751]/10',
   },
   purple: {
-    icon: 'bg-violet-500/20 border-violet-500/30 text-violet-400',
-    glow: 'from-violet-600/5',
-    accent: 'bg-violet-500',
+    accent: 'bg-[#b89750]',
+    icon: 'text-[#b89750]',
+    iconBg: 'bg-[#b89750]/10',
   },
   orange: {
-    icon: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
-    glow: 'from-orange-600/5',
-    accent: 'bg-orange-500',
+    accent: 'bg-[#ea580c]',
+    icon: 'text-[#ea580c]',
+    iconBg: 'bg-[#ea580c]/10',
   },
   red: {
-    icon: 'bg-red-500/20 border-red-500/30 text-red-400',
-    glow: 'from-red-600/5',
-    accent: 'bg-red-500',
+    accent: 'bg-[#c63535]',
+    icon: 'text-[#c63535]',
+    iconBg: 'bg-[#c63535]/10',
   },
   slate: {
-    icon: 'bg-slate-500/20 border-slate-500/30 text-slate-400',
-    glow: 'from-slate-600/5',
-    accent: 'bg-slate-500',
+    accent: 'bg-[#5a626a]',
+    icon: 'text-[#5a626a]',
+    iconBg: 'bg-[#5a626a]/10',
   },
 }
 
@@ -49,7 +49,6 @@ export function StatsCard({
   icon: Icon,
   label,
   value,
-  trend,
   color = 'blue',
   index = 0,
 }: StatsCardProps) {
@@ -57,58 +56,41 @@ export function StatsCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="
         relative overflow-hidden
-        bg-slate-900/70 backdrop-blur-xl
-        border border-slate-700/50
-        rounded-2xl shadow-lg shadow-black/20
+        bg-white
+        border border-[#e2e8f0]
+        rounded-xl
         p-5 cursor-default
-        hover:border-slate-600/60 transition-colors duration-200
+        hover:border-[#cbd5e1] transition-colors duration-200
+        shadow-none
       "
     >
-      {/* Subtle gradient glow top-left */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${cfg.glow} to-transparent pointer-events-none`} />
-
-      {/* Thin color accent line on top */}
-      <div className={`absolute top-0 left-5 right-5 h-[2px] rounded-full ${cfg.accent} opacity-60`} />
+      {/* Top accent line */}
+      <div className={`absolute top-0 left-0 right-0 h-[3px] ${cfg.accent}`} />
 
       <div className="relative flex items-start justify-between gap-3">
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2 truncate">
+          <p className="text-[11px] font-semibold text-[#5a626a] uppercase tracking-[1.5px] mb-1.5 truncate">
             {label}
           </p>
           <motion.h3
-            initial={{ opacity: 0, x: -8 }}
+            initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.08 + 0.15, duration: 0.4 }}
-            className="text-3xl font-black text-white tracking-tight leading-none"
+            transition={{ delay: index * 0.05 + 0.1, duration: 0.3 }}
+            className="text-[28px] font-black text-[#111111] tracking-tight leading-none"
           >
             {value}
           </motion.h3>
-
-          {trend !== undefined && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.08 + 0.25 }}
-              className="flex items-center gap-1 mt-2.5"
-            >
-              <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5">
-                <TrendingUp size={11} className="text-emerald-400" />
-                <span className="text-xs text-emerald-400 font-semibold">+{trend}%</span>
-              </div>
-            </motion.div>
-          )}
         </div>
 
-        {/* Icon box */}
-        <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 ${cfg.icon}`}>
-          <Icon size={20} />
+        {/* Icon box — 8px radius */}
+        <div className={`w-10 h-10 rounded-md flex items-center justify-center shrink-0 ${cfg.iconBg}`}>
+          <Icon size={18} className={cfg.icon} />
         </div>
       </div>
     </motion.div>

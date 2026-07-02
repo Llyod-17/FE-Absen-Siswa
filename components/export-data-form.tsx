@@ -1,7 +1,7 @@
 'use client'
 
 import { useForm } from 'react-hook-form'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -26,39 +26,38 @@ import { Check, ChevronsUpDown, Download, FileSpreadsheet, Building2, CalendarDa
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
   useAvailableClasses,
-  useAvailableDepartments,
   useExportData,
 } from '@/lib/api-hooks'
 import { useToastNotify } from '@/lib/use-toast-notify'
-import * as XLSX from 'xlsx'
-
-const cardClass = `
-  bg-slate-900/70 backdrop-blur-xl
-  border border-slate-700/50
-  rounded-2xl shadow-xl shadow-black/30
-`
 
 const fieldVariants = {
-  hidden: { opacity: 0, x: -12 },
+  hidden: { opacity: 0, x: -10 },
   visible: (i: number) => ({
     opacity: 1, x: 0,
-    transition: { delay: i * 0.08 + 0.15, duration: 0.4, ease: 'easeOut' as any },
+    transition: { delay: i * 0.05 + 0.1, duration: 0.4, ease: 'easeOut' as any },
   }),
 }
 
-/* Shared label style */
-const labelClass = 'text-sm font-medium text-slate-300 flex items-center gap-2 mb-1.5'
+const labelClass = 'text-[11px] font-semibold text-[#5a626a] flex items-center gap-2 mb-1.5 uppercase tracking-[1.5px]'
 
-/* Shared input style */
 const inputBaseClass = `
-  w-full h-11
-  bg-slate-800/60 border border-slate-700/60 text-slate-100
-  rounded-xl px-3
-  placeholder:text-slate-600
-  focus:outline-none focus:ring-1 focus:ring-blue-500/60 focus:border-blue-500/60
-  hover:border-slate-600 transition-all duration-200
+  w-full h-[40px]
+  bg-[#ffffff] border border-[#e2e8f0] text-[#111111]
+  rounded-md px-3.5
+  placeholder:text-[#cbd5e1]
+  focus:outline-none focus:ring-1 focus:ring-[#c63535] focus:border-[#c63535]
+  hover:border-[#cbd5e1] transition-all duration-200
   disabled:opacity-50
+  text-sm font-light
 `
+
+const JURUSAN_LIST = [
+  { id: 'RPL', name: 'RPL - Rekayasa Perangkat Lunak' },
+  { id: 'TKJ', name: 'TKJ - Teknik Komputer & Jaringan' },
+  { id: 'DKV', name: 'DKV - Desain Komunikasi Visual' },
+  { id: 'PKM', name: 'PKM - Perbankan & Keuangan Mikro' },
+  { id: 'TOI', name: 'TOI - Teknik Otomasi Industri' },
+]
 
 export function ExportDataForm() {
   const form = useForm({
@@ -70,7 +69,6 @@ export function ExportDataForm() {
   })
 
   const { classes, loading: classesLoading } = useAvailableClasses()
-  const { departments } = useAvailableDepartments()
   const { exportToExcel, loading: exportLoading } = useExportData()
   const toast = useToastNotify()
 
@@ -78,53 +76,41 @@ export function ExportDataForm() {
 
   async function onSubmit(values: any) {
     if (!values.classId && !values.departmentId && !values.attendanceDate) {
-      toast.warning('Filter Diperlukan', 'Pilih minimal satu filter sebelum export')
+      toast.warning('Filter Diperlukan', 'Pilih minimal satu filter sebelum ekspor data.')
       return
     }
 
     const result = await exportToExcel(values)
 
     if (result.success) {
-      toast.success('Export Berhasil', 'Data absensi berhasil diekspor dan diunduh.')
+      toast.success('Ekspor Berhasil', 'Data absensi berhasil diekspor dan diunduh.')
       form.reset()
     } else {
-      toast.error('Export Gagal', 'Gagal mengekspor data.')
+      toast.error('Ekspor Gagal', 'Gagal mengekspor data absensi.')
     }
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="space-y-6"
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="space-y-4"
     >
-      {/* Page Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-          <FileSpreadsheet className="h-6 w-6 text-blue-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Unduh Laporan Kehadiran</h1>
-          <p className="text-sm text-slate-500">Ekspor data kehadiran siswa ke format Excel</p>
-        </div>
-      </div>
-
       {/* Form Card */}
-      <div className={`${cardClass} p-6`}>
-
+      <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-xl p-6 shadow-none">
         {/* Card Header */}
-        <div className="flex items-center gap-2.5 pb-5 mb-5 border-b border-slate-700/50">
-          <div className="w-1.5 h-5 rounded-full bg-blue-500" />
-          <span className="text-white font-semibold text-sm">Filter Data</span>
-          <span className="ml-auto text-xs text-slate-600">Semua filter bersifat opsional</span>
+        <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-[#e2e8f0]">
+          <div className="w-1.5 h-4 rounded-full bg-[#c63535]" />
+          <span className="text-[#111111] font-semibold text-sm">Form Laporan Kehadiran</span>
+          <span className="ml-auto text-[10px] text-[#5a626a] tracking-[0.5px]">Filter bersifat opsional</span>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
             {/* Class + Department row */}
-            <div className="grid sm:grid-cols-2 gap-5">
+            <div className="grid sm:grid-cols-2 gap-4">
 
               {/* Class - Searchable Combobox */}
               <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible">
@@ -134,48 +120,45 @@ export function ExportDataForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClass}>
-                        <div className="w-3.5 h-3.5 rounded-sm bg-blue-500/30 border border-blue-500/50 flex items-center justify-center">
-                          <span className="text-[8px] text-blue-400 font-bold">K</span>
-                        </div>
                         Kelas
-                        <span className="ml-auto text-[10px] text-slate-600 font-normal">Opsional</span>
+                        <span className="ml-auto text-[10px] text-[#5a626a]/60 font-light normal-case tracking-[0.5px]">Opsional</span>
                       </FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className="
-                              w-full h-11 justify-between rounded-xl
-                              bg-slate-800/60 border-slate-700/60 text-slate-300
-                              hover:bg-slate-800 hover:border-slate-600 hover:text-slate-200
-                              focus:ring-1 focus:ring-blue-500/60 focus:border-blue-500/60
-                              transition-all duration-200
+                              w-full h-[40px] justify-between rounded-md shadow-none
+                              bg-[#ffffff] border-[#e2e8f0] text-[#111111]
+                              hover:bg-[#e9ecef] hover:border-[#cbd5e1]
+                              focus:ring-1 focus:ring-[#c63535] focus:border-[#c63535]
+                              transition-all duration-200 font-light text-sm text-left
                             "
                           >
-                            <span className={!field.value ? 'text-slate-600' : ''}>
+                            <span className={!field.value ? 'text-[#5a626a]/50' : 'font-normal'}>
                               {field.value
                                 ? classes.find(c => c.id === field.value)?.name
                                 : 'Semua Kelas'}
                             </span>
-                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-40" />
+                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-40 shrink-0" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="p-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-700/60 rounded-xl shadow-2xl shadow-black/40">
+                        <PopoverContent className="p-0 w-64 bg-[#ffffff] border border-[#e2e8f0] rounded-md shadow-none">
                           <Command className="bg-transparent">
                             <CommandInput
                               placeholder="Cari kelas..."
-                              className="text-slate-300 placeholder:text-slate-600 border-b border-slate-700/60"
+                              className="text-[#111111] placeholder:text-[#5a626a]/40 border-b border-[#e2e8f0] h-10 text-xs focus:ring-0"
                             />
                             <CommandList>
-                              <CommandEmpty className="text-slate-500 text-sm py-4 text-center">
+                              <CommandEmpty className="text-[#5a626a] text-xs py-4 text-center font-light">
                                 Kelas tidak ditemukan
                               </CommandEmpty>
                               <CommandItem
                                 value="all"
                                 onSelect={() => field.onChange('')}
-                                className="text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg mx-1 my-0.5 cursor-pointer"
+                                className="text-[#111111] hover:bg-[#e9ecef] rounded-md mx-1 my-0.5 cursor-pointer font-light text-xs"
                               >
-                                <Check className={`mr-2 h-4 w-4 ${!field.value ? 'opacity-100 text-blue-400' : 'opacity-0'}`} />
+                                <Check className={`mr-2 h-3.5 w-3.5 ${!field.value ? 'opacity-100 text-[#c63535]' : 'opacity-0'}`} />
                                 Semua Kelas
                               </CommandItem>
                               {classes.map((cls) => (
@@ -183,9 +166,9 @@ export function ExportDataForm() {
                                   key={cls.id}
                                   value={cls.name}
                                   onSelect={() => field.onChange(cls.id)}
-                                  className="text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-lg mx-1 my-0.5 cursor-pointer"
+                                  className="text-[#111111] hover:bg-[#e9ecef] rounded-md mx-1 my-0.5 cursor-pointer font-light text-xs"
                                 >
-                                  <Check className={`mr-2 h-4 w-4 ${field.value === cls.id ? 'opacity-100 text-blue-400' : 'opacity-0'}`} />
+                                  <Check className={`mr-2 h-3.5 w-3.5 ${field.value === cls.id ? 'opacity-100 text-[#c63535]' : 'opacity-0'}`} />
                                   {cls.name}
                                 </CommandItem>
                               ))}
@@ -206,19 +189,18 @@ export function ExportDataForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClass}>
-                        <Building2 className="h-3.5 w-3.5 text-slate-500" />
+                        <Building2 className="h-3.5 w-3.5 text-[#5a626a] shrink-0" />
                         Jurusan
-                        <span className="ml-auto text-[10px] text-slate-600 font-normal">Opsional</span>
+                        <span className="ml-auto text-[10px] text-[#5a626a]/60 font-light normal-case tracking-[0.5px]">Opsional</span>
                       </FormLabel>
                       <FormControl>
                         <select
                           {...field}
                           className={`${inputBaseClass} appearance-none cursor-pointer`}
-                          style={{ colorScheme: 'dark' }}
                         >
-                          <option value="" className="bg-slate-800 text-slate-300">Semua Jurusan</option>
-                          {departments.map((dept) => (
-                            <option key={dept.id} value={dept.id} className="bg-slate-800 text-slate-300">
+                          <option value="">Semua Jurusan</option>
+                          {JURUSAN_LIST.map((dept) => (
+                            <option key={dept.id} value={dept.id}>
                               {dept.name}
                             </option>
                           ))}
@@ -238,16 +220,15 @@ export function ExportDataForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className={labelClass}>
-                      <CalendarDays className="h-3.5 w-3.5 text-slate-500" />
+                      <CalendarDays className="h-3.5 w-3.5 text-[#5a626a] shrink-0" />
                       Tanggal
-                      <span className="ml-auto text-[10px] text-slate-600 font-normal">Opsional</span>
+                      <span className="ml-auto text-[10px] text-[#5a626a]/60 font-light normal-case tracking-[0.5px]">Opsional</span>
                     </FormLabel>
                     <FormControl>
                       <input
                         type="date"
                         {...field}
                         className={inputBaseClass}
-                        style={{ colorScheme: 'dark' }}
                       />
                     </FormControl>
                   </FormItem>
@@ -257,35 +238,35 @@ export function ExportDataForm() {
 
             {/* Hint */}
             <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible">
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-400/70 shrink-0 mt-0.5" />
-                <p className="text-xs text-slate-500">
-                  Minimal satu filter harus dipilih. Data akan diunduh dalam format <span className="text-slate-400">.xlsx</span>
+              <div className="flex items-start gap-2.5 p-3 rounded-md bg-[#b89750]/10 border border-[#b89750]/20">
+                <AlertTriangle className="h-3.5 w-3.5 text-[#b89750] shrink-0 mt-0.5" />
+                <p className="text-[11px] text-[#5a626a] font-light leading-snug">
+                  Minimal satu filter harus dipilih. Data absensi akan diunduh secara instan dalam format spreadsheet <span className="text-[#111111] font-semibold">.xlsx</span>
                 </p>
               </div>
             </motion.div>
 
             {/* Submit */}
-            <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible">
+            <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible" className="pt-2">
               <Button
                 type="submit"
                 disabled={isLoading}
                 className="
-                  w-full h-11 rounded-xl font-semibold
-                  bg-blue-600 hover:bg-blue-500 active:scale-[0.98]
-                  transition-all duration-200 shadow-lg shadow-blue-900/30
-                  disabled:opacity-60 disabled:cursor-not-allowed
+                  w-full h-[40px] rounded-md font-semibold text-xs tracking-[0.5px]
+                  bg-[#c63535] hover:bg-[#a32a2a] text-white
+                  active:scale-[0.98] transition-all duration-200 cursor-pointer
+                  disabled:bg-[#5a626a]/20 disabled:text-[#5a626a] disabled:cursor-not-allowed shadow-none
                 "
               >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <LoadingSpinner size="sm" />
-                    <span>Memproses...</span>
+                    <span>Memproses ekspor...</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Download className="h-4 w-4" />
-                    Unduh Laporan (Excel)
+                    UNDUH REKAPITULASI (EXCEL)
                   </div>
                 )}
               </Button>

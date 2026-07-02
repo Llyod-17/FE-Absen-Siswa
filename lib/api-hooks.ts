@@ -8,7 +8,11 @@ import {
   ChartDataPoint,
   TokenRequest,
   MonitoringResponse,
-  MonitoringSummary,
+  BackendDashboardStats,
+  TopAlfaStudent,
+  MonthlyRecapData,
+  ApiResponse,
+  ApiError,
 } from './types'
 
 /* =========================================================
@@ -55,14 +59,14 @@ export function useGenerateToken() {
 
   // Shared wrapper to avoid duplicating try/catch/loading in every method
   const _callAndSet = async (
-    apiFn: () => Promise<any>
+    apiFn: () => Promise<ApiResponse<Token> | ApiError>
   ): Promise<Token | null> => {
     setLoading(true)
     setError(null)
     try {
       const result = await apiFn()
       if ('data' in result && result.data) {
-        const token = result.data as Token
+        const token = result.data
         setGeneratedToken(token)
         return token
       }
@@ -94,7 +98,7 @@ export function useGenerateToken() {
    DASHBOARD STATS
 ========================================================= */
 
-function mapDashboardResponse(data: any): AttendanceStats {
+function mapDashboardResponse(data: BackendDashboardStats): AttendanceStats {
   return {
     totalTokens: data.total_token,
     todayAttendance: data.total_absen_hari_ini,
@@ -102,6 +106,8 @@ function mapDashboardResponse(data: any): AttendanceStats {
     totalAttendance: data.token_hari_ini,
     totalHadir: data.total_hadir_hari_ini,
     totalTelat: data.total_telat_hari_ini,
+    totalAlfa: data.total_alfa_hari_ini,
+    totalSakit: data.total_sakit_hari_ini,
   }
 }
 
@@ -188,9 +194,8 @@ export function usePaginatedTokens() {
       const result = await tokenAPI.getPaginated(page)
 
       if ('data' in result && result.data) {
-        const responseData = result.data as any
-        setTokens(responseData.tokens || [])
-        setTotalPages(responseData.totalPages || 1)
+        setTokens(result.data.tokens || [])
+        setTotalPages(result.data.totalPages || 1)
       } else {
         setError(result.message || 'Failed to fetch tokens')
       }
@@ -243,7 +248,7 @@ export function useAvailableClasses() {
             )
           } else {
             // Jika backend sudah mengembalikan format { id, name }
-            setClasses(result.data as { id: string; name: string }[])
+            setClasses(result.data as unknown as { id: string; name: string }[])
           }
         }
       } catch {
@@ -264,7 +269,9 @@ export function useAvailableDepartments() {
   const [departments] = useState([
     { id: 'RPL', name: 'RPL' },
     { id: 'TKJ', name: 'TKJ' },
-    { id: 'MM', name: 'Multimedia' },
+    { id: 'DKV', name: 'DKV' },
+    { id: 'PKM', name: 'PKM' },
+    { id: 'TOI', name: 'TOI' },
   ])
 
   return { departments, loading: false, error: null }
@@ -351,10 +358,10 @@ export function useMonitoringData(filters: { class_group?: string; status?: stri
       setLoading(true)
       const result = await monitoringAPI.getStudents(filters)
 
-      if (result && 'data' in result) {
-        const rawResponse = result as any
-        const backendStudents = (rawResponse.data || []) as any[]
-        const mappedStudents = backendStudents.map((s: any) => ({
+      if (result && 'data' in result && result.data) {
+        const rawResponse = result
+        const backendStudents = rawResponse.data || []
+        const mappedStudents = backendStudents.map((s) => ({
           id: s.id,
           nisn: s.nisn,
           name: s.full_name || s.name || '',
@@ -364,7 +371,7 @@ export function useMonitoringData(filters: { class_group?: string; status?: stri
         }))
 
         setData({
-          summary: rawResponse.summary as MonitoringSummary,
+          summary: rawResponse.summary,
           data: mappedStudents
         })
         setError(null)
@@ -382,8 +389,8 @@ export function useMonitoringData(filters: { class_group?: string; status?: stri
     fetchData()
   }, [filters.class_group, filters.status])
 
-  const updateStatus = async (nisn: string, status: string) => {
-    const result = await monitoringAPI.updateStatus({ nisn, status })
+  const updateStatus = async (userId: number, status: string) => {
+    const result = await monitoringAPI.updateStatus({ user_id: userId, status })
     if ('data' in result || result.success !== false) { // Handle varied success formats
       await fetchData() // refresh
       return true
@@ -391,5 +398,70 @@ export function useMonitoringData(filters: { class_group?: string; status?: stri
     return false
   }
 
-  return { data, loading, error, refetch: fetchData, updateStatus }
+  const updateMultipleStatuses = async (userIds: number[], status: string) => {
+    try {
+      const promises = userIds.map((userId) => monitoringAPI.updateStatus({ user_id: userId, status }))
+      const results = await Promise.all(promises)
+      await fetchData() // refresh once at the end
+      return results.some(result => 'data' in result || result.success !== false)
+    } catch {
+      return false
+    }
+  }
+
+  return { data, loading, error, refetch: fetchData, updateStatus, updateMultipleStatuses }
+}
+
+export function useTopAlfaStudents() {
+  const [data, setData] = useState<TopAlfaStudent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const result = await monitoringAPI.getTopAlfa()
+        if (result && 'data' in result && Array.isArray(result.data)) {
+          setData(result.data)
+        } else {
+          setError(result.message || 'Failed to fetch top alfa students')
+        }
+      } catch {
+        setError('Something went wrong')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  return { data, loading, error }
+}
+
+export function useMonthlyRecap() {
+  const [data, setData] = useState<MonthlyRecapData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const result = await monitoringAPI.getMonthlyRecap()
+        if (result && 'data' in result && Array.isArray(result.data)) {
+          setData(result.data)
+        } else {
+          setError(result.message || 'Failed to fetch monthly recap')
+        }
+      } catch {
+        setError('Something went wrong')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  return { data, loading, error }
 }

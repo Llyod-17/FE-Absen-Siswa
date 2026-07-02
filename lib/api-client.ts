@@ -1,4 +1,14 @@
-import { ApiError, ApiResponse } from './types'
+import {
+  ApiError,
+  ApiResponse,
+  Token,
+  BackendDashboardStats,
+  ChartDataPoint,
+  BackendStudent,
+  MonitoringApiResponse,
+  TopAlfaStudent,
+  MonthlyRecapData,
+} from './types'
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -63,16 +73,16 @@ export async function apiCall<T>(
 export const tokenAPI = {
 
   getAll: () =>
-    apiCall('/token/qr_code/active'),
+    apiCall<Token[]>('/token/qr_code/active'),
 
   getPaginated: (page: number) =>
-    apiCall(`/token?page=${page}`),
+    apiCall<{ tokens: Token[]; totalPages: number }>(`/token?page=${page}`),
 
   create: (payload: {
     duration: number
     category: string
   }) =>
-    apiCall('/token/create', {
+    apiCall<Token>('/token/create', {
       method: 'POST',
       body: JSON.stringify({
         duration: payload.duration,
@@ -81,19 +91,19 @@ export const tokenAPI = {
     }),
 
   createHadir: () =>
-    apiCall('/token/create/hadir', {
+    apiCall<Token>('/token/create/hadir', {
       method: 'POST',
     }),
 
   createTelat: () =>
-    apiCall('/token/create/telat', {
+    apiCall<Token>('/token/create/telat', {
       method: 'POST',
     }),
 }
 
 export const dashboardAPI = {
-  getStats: () => apiCall('/dashboard'),
-  getChart: () => apiCall('/dashboard/trend'),
+  getStats: () => apiCall<BackendDashboardStats>('/dashboard'),
+  getChart: () => apiCall<ChartDataPoint[]>('/dashboard/trend'),
 }
 
 export const exportAPI = {
@@ -111,18 +121,82 @@ export const logsAPI = {
 }
 
 export const monitoringAPI = {
-  getStudents: (params?: { class_group?: string; status?: string }) => {
+  getStudents: (params?: { class_group?: string; status?: string }): Promise<MonitoringApiResponse | ApiError> => {
     const searchParams = new URLSearchParams()
     if (params?.class_group && params.class_group !== 'all') searchParams.append('class_group', params.class_group)
     if (params?.status && params.status !== 'all') searchParams.append('status', params.status)
-    return apiCall(`/attendance/students?${searchParams.toString()}`)
+    return apiCall<BackendStudent[]>(`/attendance/students?${searchParams.toString()}`) as Promise<MonitoringApiResponse | ApiError>
   },
 
-  getClasses: () => apiCall('/classes'),
+  getClasses: () => apiCall<string[]>('/classes'),
   
-  updateStatus: (payload: { nisn: string; status: string }) =>
+  updateStatus: (payload: { user_id: number; status: string }) =>
     apiCall('/attendance/status', {
       method: 'PUT',
       body: JSON.stringify(payload),
     }),
+
+  getTopAlfa: () => apiCall<TopAlfaStudent[]>('/attendance/top-alfa'),
+  
+  getMonthlyRecap: () => apiCall<MonthlyRecapData[]>('/attendance/monthly-recap'),
 }
+
+export interface UserDetails {
+  id: number
+  nisn: string
+  full_name: string
+  username: string
+  role: string
+  class_group: string
+  parent_phone: string
+}
+
+export const usersAPI = {
+  getAll: (params?: { class_group?: string; search?: string }) => {
+    const searchParams = new URLSearchParams()
+    searchParams.append('role', 'siswa')
+    searchParams.append('limit', '100') // Fetch many students for search/filter list
+    if (params?.class_group) searchParams.append('class_group', params.class_group)
+    if (params?.search) searchParams.append('search', params.search)
+    return apiCall<{ users: UserDetails[]; total: number }>(`/users?${searchParams.toString()}`)
+  },
+  create: (payload: {
+    nisn: string
+    full_name: string
+    username: string
+    class_group: string
+    parent_phone: string
+  }) =>
+    apiCall<ApiResponse<UserDetails>>('/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        ...payload,
+        role: 'siswa',
+        password: 'password123', // default password
+      }),
+    }),
+  update: (
+    id: number,
+    payload: {
+      nisn: string
+      full_name: string
+      username: string
+      class_group: string
+      parent_phone: string
+    }
+  ) =>
+    apiCall<ApiResponse<UserDetails>>(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        ...payload,
+        role: 'siswa',
+      }),
+    }),
+  delete: (id: number) =>
+    apiCall<ApiResponse<string>>(`/users/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+
+

@@ -37,8 +37,8 @@ export function Header() {
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className={`
           fixed top-0 right-0 h-16 z-30
-          bg-slate-900/80 backdrop-blur-xl
-          border-b border-slate-700/50
+          bg-[#f4f5f6]/90 backdrop-blur-md
+          border-b border-[#e2e8f0]
           px-4 lg:px-6
           flex items-center justify-between
           transition-[left] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
@@ -52,14 +52,14 @@ export function Header() {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg h-9 w-9"
+            className="lg:hidden text-[#5a626a] hover:text-[#111111] hover:bg-[#e9ecef] rounded-md h-9 w-9 border border-transparent"
           >
             <Menu size={18} />
           </Button>
 
           <div className="hidden sm:flex items-center gap-2">
-            <div className="w-1.5 h-4 rounded-full bg-blue-500" />
-            <span className="text-slate-300 text-sm font-medium">Absen Admin</span>
+            <div className="w-1.5 h-4 rounded-full bg-[#c63535]" />
+            <span className="text-[#111111] text-sm font-semibold tracking-tight">Panel Pengendali</span>
           </div>
         </div>
 
@@ -68,62 +68,60 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 rounded-lg h-9 w-9"
+            className="relative text-[#5a626a] hover:text-[#111111] hover:bg-[#e9ecef] rounded-md h-9 w-9 border border-transparent"
           >
             <Bell size={18} />
-            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full ring-1 ring-slate-900" />
+            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-[#c63535] rounded-full" />
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 rounded-lg h-9 w-9"
+            className="text-[#5a626a] hover:text-[#111111] hover:bg-[#e9ecef] rounded-md h-9 w-9 border border-transparent"
           >
             <Settings size={18} />
           </Button>
 
-          <div className="w-px h-6 bg-slate-700/60 mx-1" />
+          <div className="w-px h-6 bg-[#e2e8f0] mx-1" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 className="
-                  flex items-center gap-2 px-2 py-1.5 h-9 rounded-xl
-                  text-slate-300 hover:text-white hover:bg-slate-800/60
-                  transition-all duration-200
+                  flex items-center gap-2 px-2 py-1.5 h-9 rounded-md border border-transparent
+                  text-[#5a626a] hover:text-[#111111] hover:bg-[#e9ecef]
+                  transition-all duration-200 cursor-pointer
                 "
               >
-                <div className="w-7 h-7 rounded-lg bg-blue-600/30 border border-blue-500/40 flex items-center justify-center">
-                  <User size={14} className="text-blue-400" />
+                <div className="w-7 h-7 rounded-full bg-[#c63535] flex items-center justify-center">
+                  <User size={14} className="text-white" />
                 </div>
-                <span className="hidden sm:block text-sm font-medium">Admin</span>
+                <span className="hidden sm:block text-sm font-semibold tracking-tight">Administrator</span>
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
               className="
-                bg-slate-900/95 backdrop-blur-xl
-                border border-slate-700/60
-                rounded-xl shadow-2xl shadow-black/40
-                text-slate-300 w-44 p-1
+                bg-white
+                border border-[#e2e8f0]
+                rounded-md
+                text-[#111111] w-44 p-1
               "
             >
-              <DropdownMenuItem className="rounded-lg hover:bg-slate-800/60 hover:text-white cursor-pointer text-sm">
-                Profile
+              <DropdownMenuItem 
+                onClick={() => router.push('/admin/token')}
+                className="rounded-md hover:bg-[#e9ecef] hover:text-[#111111] cursor-pointer text-sm font-light"
+              >
+                Pengaturan Token
               </DropdownMenuItem>
 
-              <DropdownMenuItem className="rounded-lg hover:bg-slate-800/60 hover:text-white cursor-pointer text-sm">
-                Settings
-              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[#e2e8f0]" />
 
-              <DropdownMenuSeparator className="bg-slate-700/50 my-1" />
-
-              {/* ✅ ACTIVE LOGOUT */}
               <DropdownMenuItem
                 onClick={handleLogout}
-                className="rounded-lg text-red-400 hover:bg-red-950/40 hover:text-red-300 cursor-pointer text-sm"
+                className="rounded-md hover:bg-[#c63535]/10 text-[#c63535] focus:text-[#c63535] cursor-pointer text-sm font-medium"
               >
                 Logout
               </DropdownMenuItem>
