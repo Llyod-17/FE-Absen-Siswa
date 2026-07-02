@@ -233,7 +233,7 @@ export function useLoginPage() {
         return
       }
 
-      const result = await submitAbsen(tokenCode)
+      const result = await submitAbsen(tokenCode, coords.latitude, coords.longitude)
 
       setAttendanceStatus(result.status || 'hadir')
       setSuccessTime({ date: new Date(), receiptId: generateReceiptId() })

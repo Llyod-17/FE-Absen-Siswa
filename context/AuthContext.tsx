@@ -18,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<User | null>;
   logout: () => void;
-  submitAbsen: (tokenCode: string) => Promise<{ message: string; status: string }>;
+  submitAbsen: (tokenCode: string, latitude?: number, longitude?: number) => Promise<{ message: string; status: string }>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -117,8 +117,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push("/login");
   }, [router]);
 
-  const submitAbsen = useCallback(async (tokenCode: string) => {
-    return authAPI.submitAbsenToken(tokenCode);
+  const submitAbsen = useCallback(async (tokenCode: string, latitude?: number, longitude?: number) => {
+    return authAPI.submitAbsenToken(tokenCode, latitude, longitude);
   }, []);
 
   const value = useMemo(

@@ -60,7 +60,9 @@ export const authAPI = {
   },
 
   submitAbsenToken: async (
-    tokenCode: string
+    tokenCode: string,
+    latitude?: number,
+    longitude?: number
   ): Promise<{ message: string; status: string }> => {
     const token = localStorage.getItem("authToken");
     if (!token) throw new Error("Not authenticated");
@@ -71,7 +73,11 @@ export const authAPI = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ token_code: tokenCode }),
+      body: JSON.stringify({ 
+        token_code: tokenCode,
+        latitude,
+        longitude
+      }),
     });
 
     if (!response.ok) {
