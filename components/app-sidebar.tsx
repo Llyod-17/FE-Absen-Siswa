@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { authAPI } from '@/api/auth'
 import { useSidebar } from '@/context/sidebar-context'
 
 const navItems = [
@@ -19,13 +18,6 @@ const navItems = [
 export function AppSidebar() {
   const { collapsed, setCollapsed } = useSidebar()
   const pathname = usePathname()
-  const router = useRouter()
-
-  const handleLogout = async () => {
-    await authAPI.logout()
-    router.push('/')
-    router.refresh()
-  }
 
   return (
     <>
@@ -147,57 +139,22 @@ export function AppSidebar() {
         </nav>
 
         {/* Bottom */}
-        <div className="p-3 border-t border-border shrink-0 space-y-1">
-          {/* Help */}
-          <Link href="#">
-            <div
-              title={collapsed ? 'Bantuan' : undefined}
-              className={cn(
-                'flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer',
-                collapsed && 'justify-center px-0'
-              )}
-            >
-              <span className="material-symbols-outlined shrink-0">help</span>
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm whitespace-nowrap overflow-hidden"
-                  >
-                    Bantuan
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </div>
-          </Link>
-
-          {/* Logout */}
-          <div
-            onClick={handleLogout}
-            title={collapsed ? 'Logout' : undefined}
-            className={cn(
-              'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer border border-border text-foreground hover:bg-muted',
-              collapsed && 'justify-center px-0 border-0'
+        <div className="p-4 border-t border-border shrink-0">
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-[10px] text-muted-foreground text-center space-y-1 font-sans"
+              >
+                <p>&copy; 2026 SMK Plus Pelita Nusantara.</p>
+                <p>All rights reserved.</p>
+                <p>Developed by KicawOrgspark</p>
+              </motion.div>
             )}
-          >
-            <span className="material-symbols-outlined shrink-0 text-[18px]">logout</span>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="text-sm whitespace-nowrap overflow-hidden"
-                >
-                  Logout
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
+          </AnimatePresence>
         </div>
       </motion.aside>
 

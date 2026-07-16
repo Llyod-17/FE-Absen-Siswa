@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
-<<<<<<< HEAD
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,97 +11,6 @@ import { useAttendanceStats, useMonitoringData } from '@/lib/api-hooks'
 /* ── helpers ── */
 function formatDate() {
   return new Date().toLocaleDateString('id-ID', {
-=======
-type TrendChartItem = {
-  date: string
-  Hadir?: number
-  Telat?: number
-  Sakit?: number
-  Alpa?: number
-  Belum?: number
-  [key: string]: unknown
-}
-
-export default function DashboardPage() {
-  const { data: chartData, loading: chartLoading } = useAttendanceChart()
-  const { data: monitoringData, loading: monitoringLoading, updateStatus, updateMultipleStatuses } = useMonitoringData({
-    class_group: 'all',
-    status: 'all'
-  })
-
-  const isDataLoading = chartLoading || monitoringLoading
-
-  // Compute live statistics from monitoring data
-  const rawStudents = (monitoringData?.data || []) as StudentAttendance[]
-  const totalStudents = rawStudents.length
-
-  const countHadir = rawStudents.filter((s) => s.status === 'hadir').length
-  const countTelat = rawStudents.filter((s) => s.status === 'telat').length
-  const countSakit = rawStudents.filter((s) => s.status === 'sakit').length
-  const countAlfa = rawStudents.filter((s) => s.status === 'alfa').length
-  const countBelumAbsen = rawStudents.filter((s) => s.status === 'belum_absen').length
-
-  const totalPresent = countHadir + countTelat
-  const attendanceRate = totalStudents > 0 ? Math.round((totalPresent / totalStudents) * 100) : 0
-
-  const liveStatusSummary = {
-    Hadir: countHadir,
-    Telat: countTelat,
-    Sakit: countSakit,
-    Alpa: countAlfa,
-    Belum: countBelumAbsen,
-  }
-
-  // Build chart data from real attendance status counts when available.
-  const trend7DaysData = (() => {
-    const emptySeries = {
-      Hadir: 0,
-      Telat: 0,
-      Sakit: 0,
-      Alpa: 0,
-      Belum: 0,
-    }
-
-    if (chartData && chartData.length > 0) {
-      const normalized = chartData.map((item: TrendChartItem, index: number) => {
-        const hasStatusBreakdown = ['Hadir', 'Telat', 'Sakit', 'Alpa', 'Belum'].some(
-          (key) => typeof item[key] === 'number'
-        )
-
-        if (hasStatusBreakdown) {
-          return {
-            date: new Date(item.date).toLocaleDateString('id-ID', { weekday: 'short' }),
-            Hadir: Number(item.Hadir ?? 0),
-            Telat: Number(item.Telat ?? 0),
-            Sakit: Number(item.Sakit ?? 0),
-            Alpa: Number(item.Alpa ?? 0),
-            Belum: Number(item.Belum ?? 0),
-          }
-        }
-
-        const isLastItem = index === chartData.length - 1
-        return {
-          date: new Date(item.date).toLocaleDateString('id-ID', { weekday: 'short' }),
-          ...(isLastItem ? liveStatusSummary : emptySeries),
-        }
-      })
-
-      if (normalized.length > 0) {
-        return normalized
-      }
-    }
-
-    return Array.from({ length: 7 }, (_, i) => {
-      const isLast = i === 6
-      return {
-        date: isLast ? 'Hari Ini' : `H-${7 - i}`,
-        ...(isLast ? liveStatusSummary : emptySeries),
-      }
-    })
-  })()
-
-  const today = new Date().toLocaleDateString('id-ID', {
->>>>>>> 1deee92d17413a554070f903f4bbb02d21af9c41
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -192,6 +100,7 @@ export default function DashboardPage() {
   const [filters] = useState<{ class_group?: string; status?: string }>({})
   const { data: monitoringRaw, loading: monitoringLoading, updateStatus } = useMonitoringData(filters)
   const [search, setSearch] = useState('')
+  const [angkatanFilter, setAngkatanFilter] = useState('Semua Angkatan')
   const [classFilter, setClassFilter] = useState('')
 
   const totalHadir = (stats?.totalHadir ?? 0) + (stats?.totalTelat ?? 0)
@@ -205,25 +114,19 @@ export default function DashboardPage() {
     const name = (s.name ?? '').toLowerCase()
     const nisn = (s.nisn ?? '').toLowerCase()
     const kelas = s.class_group ?? ''
+
+    let matchAngkatan = true
+    if (angkatanFilter === 'Kelas X') matchAngkatan = kelas.startsWith('X-')
+    if (angkatanFilter === 'Kelas XI') matchAngkatan = kelas.startsWith('XI-')
+    if (angkatanFilter === 'Kelas XII') matchAngkatan = kelas.startsWith('XII-')
+
     const matchSearch = !search || name.includes(search.toLowerCase()) || nisn.includes(search.toLowerCase())
     const matchClass = !classFilter || kelas === classFilter
-    return matchSearch && matchClass
+    return matchSearch && matchClass && matchAngkatan
   })
 
-<<<<<<< HEAD
   const handleStatusChange = async (userId: number, status: string) => {
     await updateStatus(userId, status)
-=======
-  // Handle local state edit fallback for inline remarks/timestamp updates
-  const handleUpdateDetails = (
-    userId: number,
-    timestamp: string | undefined,
-    remarks: string | undefined
-  ) => {
-    void userId
-    void timestamp
-    void remarks
->>>>>>> 1deee92d17413a554070f903f4bbb02d21af9c41
   }
 
   return (
@@ -247,18 +150,25 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
+          label="Total Siswa"
+          value={monitoringLoading ? '...' : (monitoringRaw?.summary?.total ?? 0).toLocaleString('id-ID')}
+          icon={<span className="material-symbols-outlined text-[22px]">school</span>}
+          accentColor="var(--border)"
+          index={0}
+        />
+        <StatCard
           label="Total Absen Hari Ini"
           value={statsLoading ? '...' : totalStudents.toLocaleString('id-ID')}
           icon={<span className="material-symbols-outlined text-[22px]">groups</span>}
           accentColor="var(--border)"
-          index={0}
+          index={1}
         />
         <StatCard
           label="Hadir & Telat"
           value={statsLoading ? '...' : totalHadir.toLocaleString('id-ID')}
           icon={<span className="material-symbols-outlined text-[22px]">how_to_reg</span>}
           accentColor="var(--status-hadir-text)"
-          index={1}
+          index={2}
           extra={
             !statsLoading ? (
               <div className="flex flex-col text-right">
@@ -271,13 +181,6 @@ export default function DashboardPage() {
               </div>
             ) : undefined
           }
-        />
-        <StatCard
-          label="Sakit / Izin"
-          value={statsLoading ? '...' : totalSakit.toLocaleString('id-ID')}
-          icon={<span className="material-symbols-outlined text-[22px]">medication</span>}
-          accentColor="var(--status-sakit-text)"
-          index={2}
         />
         <StatCard
           label="Alpa"
@@ -319,13 +222,29 @@ export default function DashboardPage() {
               />
             </div>
             <select
+              value={angkatanFilter}
+              onChange={(e) => { setAngkatanFilter(e.target.value); setClassFilter('') }}
+              className="w-full sm:w-36 px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary cursor-pointer font-sans"
+            >
+              <option>Semua Angkatan</option>
+              <option>Kelas X</option>
+              <option>Kelas XI</option>
+              <option>Kelas XII</option>
+            </select>
+            <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
               className="w-full sm:w-32 px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-primary cursor-pointer font-sans"
             >
               <option value="">Semua Kelas</option>
-              {Array.from(new Set(monitoringData.map((s) => s.class_group))).filter(Boolean).map((k) => (
-                <option key={k} value={k}>{k}</option>
+              {Array.from(new Set(monitoringData.map((s) => s.class_group))).filter(Boolean).filter(k => {
+                const kStr = k as string;
+                if (angkatanFilter === 'Kelas X') return kStr.startsWith('X-')
+                if (angkatanFilter === 'Kelas XI') return kStr.startsWith('XI-')
+                if (angkatanFilter === 'Kelas XII') return kStr.startsWith('XII-')
+                return true
+              }).map((k) => (
+                <option key={k as string} value={k as string}>{k as string}</option>
               ))}
             </select>
           </div>

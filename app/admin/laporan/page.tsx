@@ -105,7 +105,7 @@ export default function LaporanPage() {
                   />
                   <Legend wrapperStyle={{ fontFamily: 'Inter', fontSize: '12px', paddingTop: '20px' }} />
                   <Bar dataKey="Hadir" name="Hadir (%)" fill="#a0f1be" radius={[4, 4, 0, 0]} />
-                  <Line type="monotone" dataKey="TidakHadir" name="Tidak Hadir (%)" stroke="var(--status-alpa-text)" strokeWidth={2} dot={{ r: 4, fill: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  <Bar dataKey="TidakHadir" name="Tidak Hadir (%)" fill="var(--status-alpa-text)" radius={[4, 4, 0, 0]} />
                 </ComposedChart>
               </ResponsiveContainer>
             )}

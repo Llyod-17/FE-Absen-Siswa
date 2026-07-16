@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Courier_Prime } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, Courier_Prime } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
@@ -9,8 +9,8 @@ const inter = Inter({
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
   display: "swap",
 });
@@ -38,7 +38,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>
       <body
-        className={`${inter.variable} ${playfair.variable} ${courier.variable} antialiased font-sans`}
+        className={`${inter.variable} ${plusJakarta.variable} ${courier.variable} font-sans antialiased min-h-screen flex flex-col bg-background`}
       >
         <AuthProvider>
           {children}
