@@ -268,7 +268,7 @@ export default function PengaturanPage() {
                 <h3 className="font-serif text-2xl font-bold text-foreground">QR Token Presensi</h3>
                 <p className="font-mono text-sm text-muted-foreground mt-2">
                   {activeToken.token_code} • Berakhir {activeToken.validUntil || activeToken.valid_until || activeToken.expired_at
-                    ? new Date(activeToken.validUntil || activeToken.valid_until || activeToken.expired_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                    ? new Date((activeToken.validUntil || activeToken.valid_until || activeToken.expired_at) as string | number).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                     : '-'} WIB
                 </p>
               </div>

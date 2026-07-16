@@ -1,6 +1,6 @@
 import { LoginCredentials, LoginResponse, User } from "@/types/auth.types";
 
-const API_BASE_URL = "https://api-absiswa.reihan.biz.id/api/v1";
+const API_BASE_URL = "/api/v1";
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {

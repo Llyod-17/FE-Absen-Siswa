@@ -78,6 +78,8 @@ function DeptCard({ name, percentage, color, trend, index }: DeptCardProps) {
 export default function MonitoringPage() {
   const [classGroup, setClassGroup] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [angkatan, setAngkatan] = useState('Semua Angkatan')
+  const [jurusan, setJurusan] = useState('Semua Jurusan')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editStatus, setEditStatus] = useState('')
 
@@ -87,7 +89,11 @@ export default function MonitoringPage() {
   })
   const { classes } = useAvailableClasses()
 
-  const students = monitoring?.data ?? []
+  const studentsData = monitoring?.data ?? []
+  const students = studentsData.filter(s => {
+    if (!statusFilter) return true
+    return statusVariant(s.status || '') === statusFilter
+  })
   const summary = monitoring?.summary
 
   const handleSave = async (userId: number) => {
@@ -98,14 +104,27 @@ export default function MonitoringPage() {
     setEditStatus('')
   }
 
-  // Mock department data (would come from API in production)
-  const departments: DeptCardProps[] = [
-    { name: 'RPL', percentage: 92, color: 'var(--primary)', trend: { value: 2, direction: 'up' }, index: 0 },
-    { name: 'TKJ', percentage: 88, color: '#176c43', index: 1 },
-    { name: 'DKV', percentage: 95, color: '#694f0d', index: 2 },
-    { name: 'PKM', percentage: 81, color: '#8e706d', trend: { value: 4, direction: 'down' }, index: 3 },
-    { name: 'TOI', percentage: 90, color: '#b45309', index: 4 },
+  const defaultDepts = [
+    { name: 'RPL', color: 'var(--primary)' },
+    { name: 'TKJ', color: '#176c43' },
+    { name: 'DKV', color: '#694f0d' },
+    { name: 'PKM', color: '#8e706d' },
+    { name: 'TOI', color: '#b45309' },
   ]
+
+  const departments: DeptCardProps[] = defaultDepts.map((d, i) => {
+    const stat = summary?.departments?.[d.name]
+    let percentage = 0
+    if (stat && stat.total > 0) {
+      percentage = Math.round((stat.hadir / stat.total) * 100)
+    }
+    return {
+      name: d.name,
+      percentage,
+      color: d.color,
+      index: i
+    }
+  })
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto w-full">
@@ -141,7 +160,11 @@ export default function MonitoringPage() {
       >
         <div className="flex-1 min-w-[150px]">
           <label className="block text-xs font-semibold uppercase tracking-[0.05em] text-muted-foreground mb-1 font-sans">Angkatan</label>
-          <select className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary bg-background font-sans">
+          <select 
+            value={angkatan} 
+            onChange={(e) => { setAngkatan(e.target.value); setClassGroup('') }} 
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary bg-background font-sans"
+          >
             <option>Semua Angkatan</option>
             <option>Kelas X</option>
             <option>Kelas XI</option>
@@ -150,11 +173,17 @@ export default function MonitoringPage() {
         </div>
         <div className="flex-1 min-w-[150px]">
           <label className="block text-xs font-semibold uppercase tracking-[0.05em] text-muted-foreground mb-1 font-sans">Jurusan</label>
-          <select className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary bg-background font-sans">
+          <select 
+            value={jurusan} 
+            onChange={(e) => { setJurusan(e.target.value); setClassGroup('') }} 
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary bg-background font-sans"
+          >
             <option>Semua Jurusan</option>
             <option>RPL</option>
             <option>TKJ</option>
             <option>DKV</option>
+            <option>LPB</option>
+            <option>TOI</option>
           </select>
         </div>
         <div className="flex-1 min-w-[150px]">
@@ -165,7 +194,17 @@ export default function MonitoringPage() {
             className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-primary focus:border-primary bg-background font-sans"
           >
             <option value="">Semua Kelas</option>
-            {(classes ?? []).map((c) => (
+            {(classes ?? []).filter(c => {
+              let matchAngkatan = true
+              if (angkatan === 'Kelas X') matchAngkatan = c.id.startsWith('X-')
+              if (angkatan === 'Kelas XI') matchAngkatan = c.id.startsWith('XI-')
+              if (angkatan === 'Kelas XII') matchAngkatan = c.id.startsWith('XII-')
+          
+              let matchJurusan = true
+              if (jurusan !== 'Semua Jurusan') matchJurusan = c.id.includes(`-${jurusan}-`) || c.id.endsWith(`-${jurusan}`)
+          
+              return matchAngkatan && matchJurusan
+            }).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
@@ -182,11 +221,12 @@ export default function MonitoringPage() {
             <option value="telat">Telat</option>
             <option value="sakit">Sakit/Izin</option>
             <option value="alfa">Alpa</option>
+            <option value="belum">Belum Absen</option>
           </select>
         </div>
         <Button
           variant="outline"
-          onClick={() => { setClassGroup(''); setStatusFilter(''); refetch() }}
+          onClick={() => { setClassGroup(''); setStatusFilter(''); setAngkatan('Semua Angkatan'); setJurusan('Semua Jurusan'); refetch() }}
           className="flex items-center gap-2"
         >
           <span className="material-symbols-outlined text-[18px]">refresh</span>

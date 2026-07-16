@@ -44,6 +44,7 @@ export interface MonitoringSummary {
   alfa: number
   sakit: number
   belum_absen: number
+  departments?: Record<string, { total: number; hadir: number }>
 }
 
 export interface StudentAttendance {
