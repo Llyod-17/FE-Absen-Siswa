@@ -329,9 +329,11 @@ export default function TokenGenerationPage() {
                           </span>
                         </td>
                         <td className="py-2.5 font-mono text-slate-500">
-                          {new Date(token.validUntil).toLocaleTimeString('id-ID', {
-                            hour: '2-digit', minute: '2-digit'
-                          })}
+                          {token.validUntil
+                            ? new Date(token.validUntil).toLocaleTimeString('id-ID', {
+                                hour: '2-digit', minute: '2-digit'
+                              })
+                            : '-'}
                         </td>
                         <td className="py-2.5">
                           {token.is_active ? (
