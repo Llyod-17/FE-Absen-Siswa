@@ -123,8 +123,8 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
               })}
             </nav>
 
-            {/* Logout */}
-            <div className="p-3 border-t border-[rgba(255,255,255,0.08)] shrink-0">
+            {/* Bottom Section */}
+            <div className="p-3 border-t border-[rgba(255,255,255,0.08)] shrink-0 flex flex-col gap-4">
               <div
                 onClick={() => {
                   handleLogout()
@@ -137,6 +137,13 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
               >
                 <LogOut size={18} className="shrink-0" />
                 <span className="text-sm font-semibold">Logout</span>
+              </div>
+
+              <div className="text-[10px] text-[rgba(244,245,246,0.4)] text-center space-y-1 font-sans pb-2">
+                <p>&copy; 2026 SMK Plus Pelita Nusantara.</p>
+                <p>All rights reserved.</p>
+                <p>Developed by KicawOrgspark</p>
+                <p>Powered by DEVACTO IT RPL</p>
               </div>
             </div>
           </motion.div>

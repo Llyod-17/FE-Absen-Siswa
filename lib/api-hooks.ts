@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { tokenAPI, dashboardAPI, monitoringAPI, usersAPI, UserDetails } from './api-client'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { tokenAPI, dashboardAPI, monitoringAPI, usersAPI, UserDetails, adminNotificationAPI } from './api-client'
 import {
   Token,
   AttendanceStats,
@@ -13,6 +13,7 @@ import {
   MonthlyRecapData,
   ApiResponse,
   ApiError,
+  AdminNotification,
 } from './types'
 
 /* =========================================================
@@ -492,4 +493,88 @@ export function useUsers(filters?: { class_group?: string; search?: string }) {
   }, [filters?.class_group, filters?.search])
 
   return { data, loading, error, refetch: fetchData }
+}
+
+/* =========================================================
+   ADMIN NOTIFICATIONS
+========================================================= */
+
+export function useAdminNotifications(pollingIntervalMs = 60_000) {
+  const [notifications, setNotifications] = useState<AdminNotification[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const result = await adminNotificationAPI.getAll()
+      if ('data' in result && result.data) {
+        const items = Array.isArray(result.data) ? result.data : []
+        setNotifications(items)
+        setError(null)
+      } else {
+        setError(result.message || 'Gagal memuat notifikasi')
+      }
+    } catch {
+      setError('Gagal memuat notifikasi')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchNotifications()
+    intervalRef.current = setInterval(fetchNotifications, pollingIntervalMs)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [fetchNotifications, pollingIntervalMs])
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length
+
+  const markAsRead = async (id: number) => {
+    try {
+      await adminNotificationAPI.markAsRead(id)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      )
+    } catch { /* silent */ }
+  }
+
+  // Uses the real /notifications/read-all endpoint
+  const markAllAsRead = async () => {
+    try {
+      await adminNotificationAPI.markAllAsRead()
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+    } catch { /* silent */ }
+  }
+
+  // Delete selected by IDs
+  const deleteSelected = async (ids: number[]) => {
+    if (ids.length === 0) return
+    try {
+      await adminNotificationAPI.deleteBulk(ids)
+      setNotifications((prev) => prev.filter((n) => !ids.includes(n.id)))
+    } catch { /* silent */ }
+  }
+
+  // Delete all notifications
+  const deleteAll = async () => {
+    try {
+      await adminNotificationAPI.deleteAll()
+      setNotifications([])
+    } catch { /* silent */ }
+  }
+
+  return {
+    notifications,
+    unreadCount,
+    loading,
+    error,
+    refetch: fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteSelected,
+    deleteAll,
+  }
 }

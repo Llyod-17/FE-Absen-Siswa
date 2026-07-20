@@ -137,3 +137,12 @@ export interface MonthlyRecapData {
   rate: number
 }
 
+export interface AdminNotification {
+  id: number
+  judul: string
+  pesan: string
+  tipe: 'wa_error' | 'wa_status' | 'daily_recap'
+  is_read: boolean
+  created_at: string
+  updated_at?: string
+}

@@ -8,6 +8,7 @@ import {
   MonitoringApiResponse,
   TopAlfaStudent,
   MonthlyRecapData,
+  AdminNotification,
 } from './types'
 
 const API_URL =
@@ -246,3 +247,18 @@ export const usersAPI = {
     }),
 }
 
+export const adminNotificationAPI = {
+  getAll: () =>
+    apiCall<AdminNotification[]>('/notifications'),
+  markAsRead: (id: number) =>
+    apiCall(`/notifications/read/${id}`, { method: 'PUT' }),
+  markAllAsRead: () =>
+    apiCall('/notifications/read-all', { method: 'PUT' }),
+  deleteBulk: (ids: number[]) =>
+    apiCall('/notifications/bulk', {
+      method: 'DELETE',
+      body: JSON.stringify({ ids }),
+    }),
+  deleteAll: () =>
+    apiCall('/notifications/all', { method: 'DELETE' }),
+}

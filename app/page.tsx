@@ -173,7 +173,7 @@ function StudentDashboard() {
           <div className="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img
-                src="/logo-sekolah.png"
+                src="/logo-sekolah.webp"
                 alt="Logo"
                 className="h-8 w-8 object-contain"
               />
@@ -464,7 +464,7 @@ export default function LoginPage() {
                     className="w-20 h-20 rounded-2xl bg-[#f4f5f6] border border-[#e2e8f0] flex items-center justify-center mx-auto mb-4 relative overflow-hidden"
                   >
                     <img
-                      src="/logo-sekolah.png"
+                      src="/logo-sekolah.webp"
                       alt="Logo SMK PLUS PNB"
                       className="h-20 w-20 object-contain relative z-10"
                     />

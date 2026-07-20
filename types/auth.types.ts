@@ -82,7 +82,7 @@ export interface User {
  */
 /**
  * Url
- * https://www.reihan.biz.id/api/v1/auth/login (login)
- * https://www.reihan.biz.id/api/v1/auth/me (Get current user)
- * https://www.reihan.biz.id/api/v1/token/absen (Post absen token)
+ * https://api.smart-presence.smkpluspnb.sch.id/api/v1/auth/login (login)
+ * https://api.smart-presence.smkpluspnb.sch.id/api/v1/auth/me (Get current user)
+ * https://api.smart-presence.smkpluspnb.sch.id/api/v1/token/absen (Post absen token)
  */

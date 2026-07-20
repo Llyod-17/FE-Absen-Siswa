@@ -152,6 +152,7 @@ export function AppSidebar() {
                 <p>&copy; 2026 SMK Plus Pelita Nusantara.</p>
                 <p>All rights reserved.</p>
                 <p>Developed by KicawOrgspark</p>
+                <p>Powered by DEVACTO IT RPL</p>
               </motion.div>
             )}
           </AnimatePresence>
